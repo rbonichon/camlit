@@ -1,3 +1,1 @@
-let () =
-  Cli.parse () 
-
+let () = Cli.parse ()

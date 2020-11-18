@@ -13,7 +13,7 @@ module Subcommand = struct
   let subcommands : (string, t) Hashtbl.t = Hashtbl.create 7
 
   let add scmd = Hashtbl.add subcommands scmd.name scmd
-  
+
   let find name = Hashtbl.find_opt subcommands name
 end
 
@@ -21,20 +21,35 @@ let umsg = "Too bad"
 
 let () =
   let subcommands =
-    let open Subcommand in 
+    let open Subcommand in
     [
-      { name = "init";
+      {
+        name = "init";
         description = "Initialize empty repository";
         args = [];
-        action = fun _l -> Cmds.init ();
+        action = (fun _l -> Cmds.init ());
       };
-      { name = "hash-object";
-      description = "Hash object";
-      args = [];
-      action = fun files -> match files with file :: _ -> Cmds.hash_object file | [] -> assert false ; }
-    ] in 
+      {
+        name = "hash-object";
+        description = "Hash object";
+        args = [];
+        action =
+          (fun files ->
+            match files with
+            | file :: _ -> Cmds.hash_object file
+            | [] -> assert false);
+      };
+      {
+        name = "cat-file";
+        description = "Cat the file designated by the given oid";
+        args = [];
+        action =
+          (fun oids ->
+            match oids with oid :: _ -> Cmds.cat_file oid | [] -> assert false);
+      };
+    ]
+  in
   List.iter Subcommand.add subcommands
-
 
 let parse () =
   let args = ref [] in
