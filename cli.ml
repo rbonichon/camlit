@@ -36,7 +36,7 @@ let () =
         action =
           (fun files ->
             match files with
-            | file :: _ -> Cmds.hash_object file
+            | file :: _ -> Cmds.get_object file
             | [] -> assert false);
       };
       {
@@ -55,7 +55,6 @@ let parse () =
   let args = ref [] in
   let files = ref [] in
   let subcommand = ref None in
-
   Arg.parse_dynamic args
     (fun string ->
       match !subcommand with

@@ -26,6 +26,23 @@ let hash_string s =
   close_out oc;
   oid
 
-let hash_object file = File.read file |> hash_string |> Format.printf "%s@."
+let get_object file = File.read file |> hash_string |> Format.printf "%s@." 
 
-let cat_file oid = File.read (_object oid) |> Format.printf "%s@."
+let check_object_type obj = function
+  | None -> ()
+  | Some t as ty ->
+      let otyp = obj.Objects.typ in
+      if ty <> otyp then
+        let msg =
+          Printf.sprintf "Object type mismatch. Expected %s, got %s"
+            (Objects.Type.to_string t)
+            ( match otyp with
+            | None -> "none"
+            | Some t -> Objects.Type.to_string t )
+        in
+        failwith msg
+
+let cat_file ?expected oid =
+  let o = File.read (_object oid) |> Objects.of_string in
+  check_object_type o expected;
+  Format.printf "%s@." o.contents
