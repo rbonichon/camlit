@@ -1,6 +1,4 @@
-
 open File
-
 
 let create_directory ?(warn = false) directory_name =
   if warn && Sys.file_exists directory_name then
@@ -14,15 +12,16 @@ let init () =
   create_directory objects_directory
 
 let hash_string s =
-  let o = Objects.create s in 
+  let o = Objects.create s in
   let oid = Objects.hash o in
-  let oc = open_out_bin (Filename.concat objects_directory oid) in
+  let oc = open_out_bin (Filename.concat objects_directory (oid :> string)) in
   Printf.fprintf oc "%s" (Objects.to_string o);
   flush oc;
   close_out oc;
   oid
 
-let get_object file = File.read file |> hash_string |> Format.printf "%s@." 
+let get_object file =
+  File.read file |> hash_string |> Format.printf "%a@." Hash.pp
 
 let check_object_type obj = function
   | None -> ()

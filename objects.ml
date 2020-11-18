@@ -15,7 +15,6 @@ end
 type t = { typ : Type.t option; contents : string }
 
 let object_type_delimiter = '\x00'
-  
 
 let of_string s =
   match String.index_opt s object_type_delimiter with
@@ -37,8 +36,6 @@ let to_string s =
   Buffer.add_string b s.contents;
   Buffer.contents b
 
+let create ?(typ = Type.Blob) contents = { typ = Some typ; contents }
 
-let create ?(typ=Type.Blob) contents = { typ = Some typ; contents} 
-
-let hash t = 
-  Hash.hash_string @@ to_string t
+let hash t = Hash.hash_string @@ to_string t

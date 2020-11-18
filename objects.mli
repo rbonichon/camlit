@@ -1,6 +1,6 @@
-
 module Type : sig
-  type t = Blob 
+  type t = Blob
+
   include Sigs.STRINGIFIABLE with type t := t
 end
 
@@ -10,4 +10,4 @@ include Sigs.STRINGIFIABLE with type t := t
 
 val create : ?typ:Type.t -> string -> t
 
-val hash : t -> Hash.hash 
+val hash : t -> Hash.t
