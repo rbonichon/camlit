@@ -1,4 +1,4 @@
 (executable
- (libraries unix)
+ (libraries unix str)
  (modules_without_implementation sigs)
  (name camlit))

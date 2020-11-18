@@ -1,11 +1,6 @@
-let default_directory = ".camlit"
 
-let objects_directory = Filename.concat default_directory "objects"
+open File
 
-type oid = string
-
-(* object is reserved in OCaml *)
-let _object = Filename.concat objects_directory
 
 let create_directory ?(warn = false) directory_name =
   if warn && Sys.file_exists directory_name then
@@ -19,9 +14,10 @@ let init () =
   create_directory objects_directory
 
 let hash_string s =
-  let oid = Format.sprintf "%016x" (Hashtbl.hash s) in
+  let o = Objects.create s in 
+  let oid = Objects.hash o in
   let oc = open_out_bin (Filename.concat objects_directory oid) in
-  Printf.fprintf oc "%s" s;
+  Printf.fprintf oc "%s" (Objects.to_string o);
   flush oc;
   close_out oc;
   oid

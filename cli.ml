@@ -15,6 +15,9 @@ module Subcommand = struct
   let add scmd = Hashtbl.add subcommands scmd.name scmd
 
   let find name = Hashtbl.find_opt subcommands name
+
+  let pp_names ppf () =
+    Hashtbl.iter (fun name _ -> Format.fprintf ppf "%s@ " name) subcommands
 end
 
 let umsg = "Too bad"
@@ -47,9 +50,15 @@ let () =
           (fun oids ->
             match oids with oid :: _ -> Cmds.cat_file oid | [] -> assert false);
       };
+      { name = "write-tree";
+        description = "";
+        args = [];
+        action = fun _ -> Base.write_tree ()
+      }
     ]
   in
   List.iter Subcommand.add subcommands
+
 
 let parse () =
   let args = ref [] in
@@ -61,8 +70,16 @@ let parse () =
       | None -> (
           match Subcommand.find string with
           | None ->
-              Format.eprintf "Unknown subcommand %s@." string;
-              exit 1
+             Format.eprintf
+               "@[<v>Unknown subcommand %s@,\
+                Known subcommands are:@,\
+                @[<hov>%a@]@,\
+                @]
+                " string
+               Subcommand.pp_names ()
+            ;
+             
+             exit 1
           | Some scmd as scmd_opt ->
               let open Subcommand in
               args := scmd.args;
