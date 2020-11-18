@@ -54,7 +54,7 @@ let () =
         name = "write-tree";
         description = "";
         args = [];
-        action = (fun _ -> Base.write_tree ());
+        action = (fun _ -> let oid = Base.write_tree () in Hash.pp Format.std_formatter oid );
       };
     ]
   in

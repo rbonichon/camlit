@@ -11,14 +11,16 @@ let init () =
   create_directory default_directory;
   create_directory objects_directory
 
-let hash_string s =
-  let o = Objects.create s in
-  let oid = Objects.hash o in
+let hash_object obj =
+  let oid = Objects.hash obj in
   let oc = open_out_bin (Filename.concat objects_directory (oid :> string)) in
-  Printf.fprintf oc "%s" (Objects.to_string o);
+  Printf.fprintf oc "%s" (Objects.to_string obj);
   flush oc;
   close_out oc;
   oid
+  
+let hash_string s =
+  Objects.create s |> hash_object
 
 let get_object file =
   File.read file |> hash_string |> Format.printf "%a@." Hash.pp

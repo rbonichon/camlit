@@ -6,15 +6,34 @@ let rec write_tree ?(directory = ".") () =
   let filenames =
     Sys.readdir directory |> Array.map (Filename.concat directory)
   in
-  Array.iter
-    (fun path ->
-      if not @@ is_ignored path then
-        if Sys.is_directory path then write_tree ~directory:path ()
-        else (
+  let entries = 
+    Array.fold_left
+      (fun entries path  ->
+        if not @@ is_ignored path then
+          let open Objects.Type in 
+          let oid, typ = 
+          if Sys.is_directory path then
+            let oid = write_tree ~directory:path () in
+            oid, Tree
+          else (
           (* it is a file *)
-          Format.printf "%s " path;
-          let file_contents = File.read path in
-          let obj = Objects.create file_contents in
-          let hash = Objects.hash obj in
-          Format.printf "%a@." Hash.pp hash ))
-    filenames
+            (* Format.printf "%s " path; *)
+            let file_contents = File.read path in
+            let oid = Cmds.hash_string file_contents in
+            oid, Blob)
+          in (path, oid, typ) :: entries
+       else entries
+      )
+      []
+      filenames
+  in
+  let ppf = Format.str_formatter in
+  Format.pp_open_vbox ppf 0;
+  List.iter
+    (fun (path, oid, typ) ->
+      Format.fprintf ppf "%s %a %s@,"
+        (Objects.Type.to_string typ) Hash.pp oid path) entries;
+  Format.pp_close_box ppf ();
+  let o = Objects.tree ~contents:(Format.flush_str_formatter ()) in
+  Cmds.hash_object o
+;;

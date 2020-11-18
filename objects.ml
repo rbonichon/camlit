@@ -1,10 +1,15 @@
 module Type = struct
-  type t = Blob
+  type t =
+    | Blob
+    | Tree
 
-  let to_string = function Blob -> "blob"
+  let to_string = function
+    | Blob -> "blob"
+    | Tree -> "tree"
 
   let of_string = function
     | "blob" -> Blob
+    | "tree" -> Tree
     | s ->
         let msg =
           Printf.sprintf "Name %s does not correspond to a valid object type." s
@@ -38,4 +43,9 @@ let to_string s =
 
 let create ?(typ = Type.Blob) contents = { typ = Some typ; contents }
 
+let tree ~contents = create ~typ:Type.Tree contents
+
+let blob ~contents = create ~typ:Type.Blob contents
+
 let hash t = Hash.hash_string @@ to_string t
+
