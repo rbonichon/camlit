@@ -2,7 +2,7 @@ let is_ignored =
   let rexp = Str.regexp_string Filename.dir_sep in
   fun path -> List.mem ".camlit" (Str.split rexp path)
 
-let rec write_tree ?(directory = ".") () =
+let rec write_tree ~directory =
   let filenames =
     Sys.readdir directory |> Array.map (Filename.concat directory)
   in
@@ -13,7 +13,7 @@ let rec write_tree ?(directory = ".") () =
           let open Objects.Type in 
           let oid, typ = 
           if Sys.is_directory path then
-            let oid = write_tree ~directory:path () in
+            let oid = write_tree ~directory:path in
             oid, Tree
           else (
           (* it is a file *)
@@ -37,3 +37,13 @@ let rec write_tree ?(directory = ".") () =
   let o = Objects.tree ~contents:(Format.flush_str_formatter ()) in
   Cmds.hash_object o
 ;;
+
+
+let _tree_entries oid =
+  Cmds.get_object oid 
+  
+let read_tree _oid = assert false
+  
+  
+
+  

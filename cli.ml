@@ -54,8 +54,15 @@ let () =
         name = "write-tree";
         description = "";
         args = [];
-        action = (fun _ -> let oid = Base.write_tree () in Hash.pp Format.std_formatter oid );
+        action = (fun _ ->
+          let oid = Base.write_tree ~directory:"." in
+          Hash.pp Format.std_formatter oid );
       };
+      { name = "read-tree";
+        description = "";
+        args = [];
+        action = (fun l -> match l with oid :: _ -> Base.read_tree oid | [] -> assert false)
+      }
     ]
   in
   List.iter Subcommand.add subcommands
