@@ -47,5 +47,5 @@ let tree ~contents = create ~typ:Type.Tree contents
 
 let blob ~contents = create ~typ:Type.Blob contents
 
-let hash t = Hash.hash_string @@ to_string t
+let hash t = Hash.of_string @@ to_string t
 

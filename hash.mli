@@ -1,5 +1,7 @@
-type t = private string
+type t 
 
-val hash_string : string -> t
+include Sigs.STRINGIFIABLE with type t:=t
+
+val of_file : string -> t
 
 val pp : Format.formatter -> t -> unit

@@ -13,7 +13,7 @@ let init () =
 
 let hash_object obj =
   let oid = Objects.hash obj in
-  let oc = open_out_bin (Filename.concat objects_directory (oid :> string)) in
+  let oc = open_out_bin (Filename.concat objects_directory (Hash.to_string oid)) in
   Printf.fprintf oc "%s" (Objects.to_string obj);
   flush oc;
   close_out oc;
