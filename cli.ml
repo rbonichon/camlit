@@ -39,7 +39,7 @@ let () =
         action =
           (fun files ->
             match files with
-            | file :: _ -> Cmds.get_object file
+            | file :: _ -> Cmds.hash_file file
             | [] -> assert false);
       };
       {
@@ -48,7 +48,10 @@ let () =
         args = [];
         action =
           (fun oids ->
-            match oids with oid :: _ -> Cmds.cat_file oid | [] -> assert false);
+            match oids with
+            | oid :: _ ->
+               Cmds.cat_file oid
+            | [] -> assert false);
       };
       {
         name = "write-tree";
@@ -56,7 +59,7 @@ let () =
         args = [];
         action = (fun _ ->
           let oid = Base.write_tree ~directory:"." in
-          Hash.pp Format.std_formatter oid );
+          Format.printf "%a@." Hash.pp oid );
       };
       { name = "read-tree";
         description = "";

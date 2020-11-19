@@ -1,51 +1,48 @@
-module Type = struct
-  type t =
-    | Blob
-    | Tree
 
-  let to_string = function
-    | Blob -> "blob"
-    | Tree -> "tree"
+type contents = string
 
-  let of_string = function
-    | "blob" -> Blob
-    | "tree" -> Tree
-    | s ->
-        let msg =
-          Printf.sprintf "Name %s does not correspond to a valid object type." s
-        in
-        failwith msg
-end
-
-type t = { typ : Type.t option; contents : string }
+type 'a t =
+  | Tree of 'a
+  | Blob of 'a 
 
 let object_type_delimiter = '\x00'
 
+let tree contents = Tree contents
+
+let blob contents = Blob contents
+
+let contents = function
+  | Tree c
+    | Blob c -> c
+
 let of_string s =
   match String.index_opt s object_type_delimiter with
-  | None -> { typ = None; contents = s }
+  | None -> Blob s
   | Some pos ->
-      {
-        typ = Some (String.sub s 0 pos |> Type.of_string);
-        contents = String.sub s (pos + 1) (String.length s - pos - 2);
-      }
+     let contents = String.sub s (pos + 1) (String.length s - pos - 2) in
+     let typ = 
+       match String.sub s 0 pos with
+       | "blob" -> blob
+       | "tree" -> tree
+       | s ->
+          let msg = Printf.sprintf "Unkown object type %s" s in
+          failwith msg in 
+     typ contents
 
-let to_string s =
+let to_string t =
   let b = Buffer.create 1024 in
   (* write object type *)
-  ( match s.typ with
-  | None -> ()
-  | Some ty ->
-      Buffer.add_string b (Type.to_string ty);
-      Buffer.add_char b object_type_delimiter );
-  Buffer.add_string b s.contents;
+  let contents = 
+    match t with
+    | Tree contents ->
+       Buffer.add_string b "tree";
+       contents
+    | Blob contents ->
+       Buffer.add_string b "blob"; contents in
+    Buffer.add_char b object_type_delimiter;
+  Buffer.add_string b contents;
   Buffer.contents b
 
-let create ?(typ = Type.Blob) contents = { typ = Some typ; contents }
-
-let tree ~contents = create ~typ:Type.Tree contents
-
-let blob ~contents = create ~typ:Type.Blob contents
 
 let hash t = Hash.of_string @@ to_string t
 

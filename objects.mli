@@ -1,29 +1,24 @@
 
 (** Git objects manipulation *)
 
-(** {1 Object types}*)
-module Type : sig
-  type t = Blob | Tree
-
-  include Sigs.STRINGIFIABLE with type t := t
-end
 
 (** {1 Objects }*)
 
+
+type contents = string 
+
 (** An object is an optional type with bytes representing its contents *)
-type t =
-  private
-    {
-      typ : Type.t option;
-      contents : string;
-    }
+type 'a t = 
+  | Tree of 'a 
+  | Blob of 'a 
 
-include Sigs.STRINGIFIABLE with type t := t
 
-val create : ?typ:Type.t -> string -> t
+include Sigs.STRINGIFIABLE with type t := contents t
 
-val tree: contents:string -> t
+val tree: 'a -> 'a t
 
-val blob: contents:string -> t
+val blob: 'a -> 'a t
 
-val hash : t -> Hash.t
+val contents: contents t -> string
+
+val hash : contents t -> Hash.t

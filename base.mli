@@ -4,4 +4,4 @@ val write_tree: directory:string -> Hash.t
 
 
 (** [read_tree] *)
-val read_tree: 'a -> 'b ;;
+val read_tree: string -> unit ;;
