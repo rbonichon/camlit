@@ -25,3 +25,23 @@ let makedirs split_path =
 
 let makedirs path =
   makedirs (Str.split (Str.regexp_string Filename.dir_sep) path)
+
+type walk = { directories : string list; files : string list; root : string }
+
+let walk path =
+  let root = path in
+  let rec loop files directories = function
+    | [] -> { root; files; directories }
+    | dirname :: dirs ->
+        let a = Sys.readdir dirname in
+        let files, dirs =
+          Array.fold_left
+            (fun (files, dirs) elt ->
+              let elt = Filename.concat dirname elt in
+              if Sys.is_directory elt then (files, elt :: dirs)
+              else (elt :: files, dirs))
+            (files, dirs) a
+        in
+        loop files (dirname :: directories) dirs
+  in
+  loop [] [] [ path ]

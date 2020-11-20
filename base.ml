@@ -62,8 +62,19 @@ let get_tree oid path =
   loop oid path;
   h
 
+let empty_directory path =
+  if Sys.is_directory path then (
+    let w = File.walk path in
+    let delete_with rm name = if not @@ is_ignored name then rm name in
+    List.iter (delete_with Sys.remove) w.files;
+    List.iter
+      (delete_with (fun dirname -> try Unix.rmdir dirname with _ -> ()))
+      w.directories )
+
 let read_tree oid =
-  let h = get_tree oid "." in
+  let path = "." in
+  empty_directory path;
+  let h = get_tree oid path in
   Hashtbl.iter
     (fun name oid ->
       let oc = open_out_bin name in
