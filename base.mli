@@ -3,3 +3,5 @@ val write_tree : directory:string -> Hash.t
 
 val read_tree : string -> unit
 (** [read_tree] *)
+
+val commit : message:string -> Hash.t

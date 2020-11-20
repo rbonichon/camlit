@@ -32,7 +32,8 @@ let rec write_tree ~directory =
       | Objects.Blob (oid, path) ->
           Format.fprintf ppf "blob %a %s@," Hash.pp oid path
       | Objects.Tree (oid, path) ->
-          Format.fprintf ppf "blob %a %s@," Hash.pp oid path)
+         Format.fprintf ppf "tree %a %s@," Hash.pp oid path
+      | Objects.Commit _ -> assert false)
     entries;
   Format.pp_close_box ppf ();
   let o = Objects.tree (Format.flush_str_formatter ()) in
@@ -56,7 +57,9 @@ let get_tree oid path =
       (function
         | Objects.Blob (oid, name) ->
             Hashtbl.add h (Filename.concat path name) oid
-        | Objects.Tree (oid, name) -> loop oid (Filename.concat path name))
+        | Objects.Tree (oid, name) ->
+           loop oid (Filename.concat path name)
+        | Objects.Commit _ -> ())
       entries
   in
   loop oid path;
@@ -82,3 +85,8 @@ let read_tree oid =
       flush oc;
       close_out oc)
     h
+
+let commit ~message =
+  print_endline message;
+  let oid = write_tree ~directory:"." in
+  Data.hash_object (Objects.commit oid message)

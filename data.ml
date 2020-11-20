@@ -14,7 +14,7 @@ let check_object_type objstr o =
   | Some ostr ->
       let otyp =
         let open Objects in
-        match o with Tree _ -> "tree" | Blob _ -> "blob"
+        match o with Tree _ -> "tree" | Blob _ -> "blob" | Commit _ -> "commit"
       in
       if ostr <> otyp then
         let msg =
@@ -27,9 +27,9 @@ let get_object oid = File.(read (_object oid)) |> Objects.of_string
 let get_tree oid =
   match get_object oid with
   | Objects.Tree contents -> contents
-  | Objects.Blob _ -> assert false
+  | _ -> assert false
 
 let get_blob oid =
   match get_object oid with
   | Objects.Blob contents -> contents
-  | Objects.Tree _ -> assert false
+  |  _ -> assert false

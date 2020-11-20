@@ -67,6 +67,25 @@ let () =
           (fun l ->
             match l with oid :: _ -> Base.read_tree oid | [] -> assert false);
       };
+      (let msg = ref None in
+       {
+         name = "commit";
+         args =
+           [
+             ( "-message",
+               Arg.String (fun s -> msg := Some s),
+               " Commit message (required)" );
+           ];
+         description = "Save a snaphost of the work tree";
+         action =
+           (fun _ ->
+             match !msg with
+             | None -> failwith "Committing requires a non-empty commit message"
+             | Some message ->
+                let oid = Base.commit ~message in
+                Format.printf "%a@." Hash.pp oid 
+           );
+       });
     ]
   in
   List.iter Subcommand.add subcommands
