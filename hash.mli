@@ -1,6 +1,6 @@
-type t 
+type t
 
-include Sigs.STRINGIFIABLE with type t:=t
+include Sigs.STRINGIFIABLE with type t := t
 
 val of_file : string -> t
 

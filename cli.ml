@@ -48,24 +48,25 @@ let () =
         args = [];
         action =
           (fun oids ->
-            match oids with
-            | oid :: _ ->
-               Cmds.cat_file oid
-            | [] -> assert false);
+            match oids with oid :: _ -> Cmds.cat_file oid | [] -> assert false);
       };
       {
         name = "write-tree";
         description = "";
         args = [];
-        action = (fun _ ->
-          let oid = Base.write_tree ~directory:"." in
-          Format.printf "%a@." Hash.pp oid );
+        action =
+          (fun _ ->
+            let oid = Base.write_tree ~directory:"." in
+            Format.printf "%a@." Hash.pp oid);
       };
-      { name = "read-tree";
+      {
+        name = "read-tree";
         description = "";
         args = [];
-        action = (fun l -> match l with oid :: _ -> Base.read_tree oid | [] -> assert false)
-      }
+        action =
+          (fun l ->
+            match l with oid :: _ -> Base.read_tree oid | [] -> assert false);
+      };
     ]
   in
   List.iter Subcommand.add subcommands

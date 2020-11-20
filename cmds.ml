@@ -11,12 +11,8 @@ let init () =
   create_directory default_directory;
   create_directory objects_directory
 
-
 let hash_file file =
   File.read file |> Data.hash_string |> Format.printf "%a@." Hash.pp
 
 let cat_file oid =
-  Data.get_object oid
-  |> Objects.contents
-  |> Format.printf "%s@."
-  
+  Data.get_object oid |> Objects.contents |> Format.printf "%s@."
