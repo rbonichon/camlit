@@ -89,7 +89,8 @@ let read_tree oid =
 let commit ~message =
   print_endline message;
   let dir_oid = write_tree ~directory:"." in
-  let oid = Data.hash_object (Objects.commit dir_oid message) in
+  let head = Data.get_head () in
+  let oid = Data.hash_object (Objects.commit dir_oid ?head message) in
   Data.set_head oid;
   oid 
 

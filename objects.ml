@@ -4,6 +4,7 @@ type 'a t =
   | Tree of 'a
   | Blob of 'a
   | Commit of { oid : Hash.t;
+                head: string option;
                 message : string; }
 
 let object_type_delimiter = '\x00'
@@ -12,8 +13,8 @@ let tree contents = Tree contents
 
 let blob contents = Blob contents
 
-let commit oid message =
-  Commit { oid; message; }
+let commit ?head oid message =
+  Commit { oid; head; message; }
 
 
 
@@ -47,7 +48,19 @@ let to_string t =
      Buffer.add_char b object_type_delimiter;
      Buffer.add_string b contents;
      Buffer.contents b
-  | Commit {oid; message;} ->
-     Format.asprintf "@[<v>tree %a@,@,%s@]@." Hash.pp oid message
+  | Commit {oid; message; head; } ->
+     let open Format in
+     let ppf = Format.str_formatter in
+     pp_open_vbox ppf 0;
+     fprintf ppf "tree %a@," Hash.pp oid;
+     (match head with
+      | Some s -> fprintf ppf "parent %s@," s
+      | None -> ()
+     );
+     pp_print_cut ppf ();
+     pp_print_string ppf message;
+     pp_close_box ppf ();
+     flush_str_formatter ()
+
 
 let hash t = Hash.of_string @@ to_string t

@@ -41,3 +41,9 @@ let set_head oid =
   Hash.pp ppf oid;
   Format.pp_print_flush ppf ();
   close_out oc
+
+let get_head () =
+  if Sys.file_exists File.head then
+    File.read File.head |> String.trim |> Option.some
+  else None 
+
