@@ -12,3 +12,16 @@ let read file =
   let s = really_input_string ic (in_channel_length ic) in
   close_in ic;
   s
+
+let makedirs split_path =
+  let rec loop path = function
+    | [] | [ _ ] -> ()
+    | pa :: pas ->
+        let dir = Filename.concat path pa in
+        if not @@ Sys.file_exists dir then Unix.mkdir dir 0o700;
+        loop dir pas
+  in
+  loop "." split_path
+
+let makedirs path =
+  makedirs (Str.split (Str.regexp_string Filename.dir_sep) path)
