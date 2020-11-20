@@ -4,6 +4,8 @@ let default_directory = ".camlit"
 
 let objects_directory = Filename.concat default_directory "objects"
 
+let head = Filename.concat default_directory "HEAD"
+
 (* object is reserved in OCaml *)
 let _object = Filename.concat objects_directory
 

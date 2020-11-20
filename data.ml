@@ -33,3 +33,11 @@ let get_blob oid =
   match get_object oid with
   | Objects.Blob contents -> contents
   |  _ -> assert false
+
+
+let set_head oid =
+  let oc = open_out_bin File.head in
+  let ppf = Format.formatter_of_out_channel oc in
+  Hash.pp ppf oid;
+  Format.pp_print_flush ppf ();
+  close_out oc
