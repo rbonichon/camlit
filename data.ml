@@ -1,6 +1,6 @@
 let hash_object obj =
   let oid = Objects.hash obj in
-  let oc = open_out_bin (File._object (Hash.to_string oid)) in
+  let oc = open_out_bin (File._object oid) in
   Printf.fprintf oc "%s" (Objects.to_string obj);
   flush oc;
   close_out oc;
@@ -24,6 +24,13 @@ let check_object_type objstr o =
 
 let get_object oid = File.(read (_object oid)) |> Objects.of_string
 
+let get_commit oid =
+  match get_object oid with 
+  | Objects.Commit v -> v
+  | _ ->
+     let msg = Format.asprintf "%a does not correspond to a commit" Hash.pp oid in
+     failwith msg 
+
 let get_tree oid =
   match get_object oid with
   | Objects.Tree contents -> contents
@@ -44,6 +51,6 @@ let set_head oid =
 
 let get_head () =
   if Sys.file_exists File.head then
-    File.read File.head |> String.trim |> Option.some
+    File.read File.head |> String.trim |> Hash.of_hex |> Option.some
   else None 
 

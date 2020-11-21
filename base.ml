@@ -52,11 +52,12 @@ let _tree_entries oid =
 let get_tree oid path =
   let h = Hashtbl.create 7 in
   let rec loop oid path =
+    let oid = Hash.of_hex oid in
     let entries = _tree_entries oid in
     List.iter
       (function
         | Objects.Blob (oid, name) ->
-            Hashtbl.add h (Filename.concat path name) oid
+            Hashtbl.add h (Filename.concat path name) (Hash.of_hex oid)
         | Objects.Tree (oid, name) ->
            loop oid (Filename.concat path name)
         | Objects.Commit _ -> ())
@@ -89,8 +90,11 @@ let read_tree oid =
 let commit ~message =
   print_endline message;
   let dir_oid = write_tree ~directory:"." in
-  let head = Data.get_head () in
-  let oid = Data.hash_object (Objects.commit dir_oid ?head message) in
+  let parent = Data.get_head () in
+  let oid = Data.hash_object (Objects.commit dir_oid ?parent message) in
   Data.set_head oid;
   oid 
 
+
+let _get_commit oid =
+  Data.get_commit oid 

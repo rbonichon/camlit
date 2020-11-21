@@ -7,7 +7,7 @@ let objects_directory = Filename.concat default_directory "objects"
 let head = Filename.concat default_directory "HEAD"
 
 (* object is reserved in OCaml *)
-let _object = Filename.concat objects_directory
+let _object oid = Filename.concat objects_directory (Hash.to_string oid)
 
 let read file =
   let ic = open_in file in

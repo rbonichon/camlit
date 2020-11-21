@@ -85,7 +85,13 @@ let () =
                 let oid = Base.commit ~message in
                 Format.printf "%a@." Hash.pp oid 
            );
-       });
+       }
+      );
+      { name = "log";
+        description = "Log commits";
+        args = [];
+        action = (fun _ -> Cmds.log ())
+      }
     ]
   in
   List.iter Subcommand.add subcommands
