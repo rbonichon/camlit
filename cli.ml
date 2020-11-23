@@ -90,7 +90,13 @@ let () =
       { name = "log";
         description = "Log commits";
         args = [];
-        action = (fun _ -> Cmds.log ())
+        action =
+          (fun oids ->
+            match oids with
+            | oid :: _ ->
+               let oid = Some (Hash.of_hex oid) in
+               Cmds.log ~oid ()
+            | [] -> Cmds.log ())
       }
     ]
   in
