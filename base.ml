@@ -41,25 +41,28 @@ let rec write_tree ~directory =
 
 let _tree_entries oid =
   let contents = Data.get_tree oid in
-  String.split_on_char '\n' contents
+  Format.printf "contents: %s@." contents;
+  String.split_on_char '\n' (String.trim contents)
   |> List.map (fun line ->
          Scanf.sscanf line "%s %[a-f0-9] %s" (fun typ oid name ->
              match typ with
              | "blob" -> Objects.blob (oid, name)
              | "tree" -> Objects.tree (oid, name)
-             | _ -> assert false))
+             | typ ->
+                let msg =
+                  Format.asprintf "unexpected type for tree entry (%s) oid %s" typ oid in
+               failwith msg ))
 
 let get_tree oid path =
   let h = Hashtbl.create 7 in
   let rec loop oid path =
-    let oid = Hash.of_hex oid in
     let entries = _tree_entries oid in
     List.iter
       (function
         | Objects.Blob (oid, name) ->
             Hashtbl.add h (Filename.concat path name) (Hash.of_hex oid)
         | Objects.Tree (oid, name) ->
-           loop oid (Filename.concat path name)
+           loop (Hash.of_hex oid) (Filename.concat path name)
         | Objects.Commit _ -> ())
       entries
   in
@@ -96,5 +99,11 @@ let commit ~message =
   oid 
 
 
-let _get_commit oid =
+let get_commit oid =
   Data.get_commit oid 
+
+
+let checkout oid =
+  let commit = get_commit oid in
+  read_tree commit.oid;
+  Data.set_head oid

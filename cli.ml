@@ -65,7 +65,7 @@ let () =
         args = [];
         action =
           (fun l ->
-            match l with oid :: _ -> Base.read_tree oid | [] -> assert false);
+            match l with oid :: _ -> Base.read_tree (Hash.of_hex oid) | [] -> assert false);
       };
       (let msg = ref None in
        {
@@ -97,6 +97,16 @@ let () =
                let oid = Some (Hash.of_hex oid) in
                Cmds.log ~oid ()
             | [] -> Cmds.log ())
+      };
+      { name = "checkout";
+        description = "Checkout given commit id";
+        args = [];
+        action = (fun oids ->
+          match oids with
+          | oid :: _ ->
+             Cmds.checkout (Hash.of_hex oid);
+          | [] -> failwith "checkout expects a commit id"
+        )
       }
     ]
   in

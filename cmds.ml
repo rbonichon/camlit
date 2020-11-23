@@ -41,3 +41,6 @@ let log ?(oid=Data.get_head ()) () =
        Format.printf "commit %a@\n%a@\n@." Hash.pp oid (wrap 4) cmt.message;
        loop cmt.parent
   in loop oid
+
+
+let checkout = Base.checkout
