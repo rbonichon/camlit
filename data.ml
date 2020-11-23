@@ -42,15 +42,22 @@ let get_blob oid =
   |  _ -> assert false
 
 
-let set_head oid =
-  let oc = open_out_bin File.head in
+let update_ref refname oid =
+  let file = File._ref refname in
+  File.makedirs file;
+  let oc = open_out_bin file in
   let ppf = Format.formatter_of_out_channel oc in
   Hash.pp ppf oid;
   Format.pp_print_flush ppf ();
   close_out oc
 
-let get_head () =
-  if Sys.file_exists File.head then
-    File.read File.head |> String.trim |> Hash.of_hex |> Option.some
+let get_ref refname =
+  let file = File._ref refname in
+  if Sys.file_exists file then 
+    File.read file |> String.trim |> Hash.of_hex |> Option.some
   else None 
+
+let set_head = update_ref "HEAD"
+
+let get_head () = get_ref "HEAD"
 

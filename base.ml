@@ -107,11 +107,11 @@ let checkout oid =
   read_tree commit.oid;
   Data.set_head oid
 
-
 let tag_oid oid name =
-  let _ = oid and _ = name in ()
+  let tagfile = File._tag (Filename.concat "tags" name) in 
+  Data.update_ref tagfile oid 
   
-let tag  name =
+let tag name =
   match Data.get_head () with
   | Some oid -> tag_oid oid name
   | None -> failwith "No head"
