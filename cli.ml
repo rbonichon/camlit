@@ -107,7 +107,17 @@ let () =
              Cmds.checkout (Hash.of_hex oid);
           | [] -> failwith "checkout expects a commit id"
         )
+      };
+      { name = "tag";
+        description = "Tag a specific commit";
+        args = [];
+        action = 
+          function 
+          | [tagname] -> Base.tag tagname 
+          | oid :: [tagname] -> Base.tag_oid (Hash.of_hex oid) tagname
+          | _ -> assert false 
       }
+      
     ]
   in
   List.iter Subcommand.add subcommands

@@ -102,8 +102,16 @@ let commit ~message =
 let get_commit oid =
   Data.get_commit oid 
 
-
 let checkout oid =
   let commit = get_commit oid in
   read_tree commit.oid;
   Data.set_head oid
+
+
+let tag_oid oid name =
+  let _ = oid and _ = name in ()
+  
+let tag  name =
+  match Data.get_head () with
+  | Some oid -> tag_oid oid name
+  | None -> failwith "No head"
