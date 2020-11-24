@@ -18,46 +18,42 @@ module Subcommand = struct
 
   let pp_names ppf () =
     Hashtbl.iter (fun name _ -> Format.fprintf ppf "%s@ " name) subcommands
+
+  let create ?(args = []) ?description ~name action =
+    add
+      {
+        args;
+        name;
+        description = Option.value description ~default:name;
+        action;
+      }
 end
 
 let umsg = "Too bad"
 
-
 let with_oid ?err_msg k args =
-  try 
+  let _ = err_msg in 
     let oid =
-      match args with 
+      match args with
       | oid :: _ -> Base.get_oid oid
       | [] -> Option.get (Data.get_head ())
-    in k oid
-  with
-  | _ -> match err_msg with None -> failwith "Unable to get oid" | Some emsg -> failwith emsg
+    in
+    k oid
 
 let () =
   let subcommands =
     let open Subcommand in
+    create ~name:"init" ~description:"Initialize empty repository" (fun _l ->
+        Cmds.init ());
+    create ~name:"hash-object" (function
+      | file :: _ -> Cmds.hash_file file
+      | [] -> assert false);
     [
-      {
-        name = "init";
-        description = "Initialize empty repository";
-        args = [];
-        action = (fun _l -> Cmds.init ());
-      };
-      {
-        name = "hash-object";
-        description = "Hash object";
-        args = [];
-        action =
-          (fun files ->
-            match files with
-            | file :: _ -> Cmds.hash_file file
-            | [] -> assert false);
-      };
       {
         name = "cat-file";
         description = "Cat the file designated by the given oid";
         args = [];
-        action = with_oid Cmds.cat_file 
+        action = with_oid Cmds.cat_file;
       };
       {
         name = "write-tree";
@@ -106,21 +102,22 @@ let () =
         name = "checkout";
         description = "Checkout given commit id";
         args = [];
-        action = with_oid Cmds.checkout
+        action = with_oid Cmds.checkout;
       };
       {
         name = "tag";
         description = "Tag a specific commit";
         args = [];
-        action = 
+        action =
           (function
-          | [ tagname ] -> Base.tag_oid tagname (Option.get @@ Data.get_head ()) 
-          | [ oid; tagname ] -> Base.tag_oid tagname (Base.get_oid oid) 
+          | [ tagname ] -> Base.tag_oid tagname (Option.get @@ Data.get_head ())
+          | [ oid; tagname ] -> Base.tag_oid tagname (Base.get_oid oid)
           | _ -> assert false);
       };
     ]
   in
-  List.iter Subcommand.add subcommands
+  List.iter Subcommand.add subcommands;
+  Subcommand.create ~name:"show" ~description:"Show the refs" (with_oid Cmds.show)
 
 let parse () =
   let args = ref [] in

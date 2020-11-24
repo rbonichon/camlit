@@ -1,3 +1,11 @@
+type oid = Hash.t
+
+type oid_set = Hash.Set.t
+
+type refname = string
+
+type path = string 
+
 let hash_object obj =
   let oid = Objects.hash obj in
   let oc = open_out_bin (File._object oid) in
@@ -73,3 +81,25 @@ let find_ref refname =
 let set_head = update_ref "HEAD"
 
 let get_head () = get_ref "HEAD"
+
+let get_refs () =
+  let walk = File.walk File.refs_directory in
+  List.map
+    (fun filename ->
+      (filename, Option.get @@ get_ref ~under:"." filename))
+    walk.files
+
+let predecessors oids =
+  let rec loop visited set = function
+    | [] -> set
+    | oid :: oids ->
+        if Hash.Set.mem oid visited then loop visited set oids
+        else
+          let set = oid :: set in
+          let oids =
+            let commit = get_commit oid in
+            match commit.parent with None -> oids | Some oid -> oid :: oids
+          in
+          loop (Hash.Set.add oid visited) set oids
+  in
+  loop Hash.Set.empty [] oids
