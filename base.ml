@@ -117,5 +117,4 @@ let tag name =
   | None -> failwith "No head"
 
 let get_oid name =
-  Format.printf "get oid : %s@." name;
-  match Data.get_ref name with Some oid -> oid | None -> Hash.of_hex name
+  match Data.find_ref name with Some oid -> oid | None -> Hash.of_hex name

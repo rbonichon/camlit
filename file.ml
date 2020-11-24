@@ -4,6 +4,12 @@ let default_directory = ".camlit"
 
 let objects_directory = Filename.concat default_directory "objects"
 
+let refs_directory = Filename.concat default_directory "refs"
+
+let tags_directory = Filename.concat refs_directory "tags"
+
+let heads_directory = Filename.concat refs_directory "heads"
+
 let _ref = Filename.concat default_directory
 
 let _tag = Filename.concat "refs"

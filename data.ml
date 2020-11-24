@@ -55,12 +55,37 @@ let update_ref refname oid =
   Format.pp_print_flush ppf ();
   close_out oc
 
-let get_ref refname =
-  let file = File._ref refname in
-  Format.printf "get ref %s@." file;
-  if Sys.file_exists file then
-    File.read file |> String.trim |> Hash.of_hex |> Option.some
+let get_hash_from_file filename =
+  if Sys.file_exists filename then
+    File.read filename |> String.trim |> Hash.of_hex |> Option.some
   else None
+
+let get_ref ?under refname =
+  let filename =
+    match under with
+    | None -> File._ref refname
+    | Some dir -> Filename.concat dir refname
+  in
+  get_hash_from_file filename
+
+let find_ref refname =
+  let prefixes =
+    [
+      File.default_directory;
+      File.refs_directory;
+      File.tags_directory;
+      File.heads_directory;
+    ]
+  in
+  let rec find = function
+    | [] -> None
+    | dir :: dirs -> (
+        let filename = Filename.concat dir refname in
+        match get_hash_from_file filename with
+        | None -> find dirs
+        | some_hash -> some_hash )
+  in
+  find prefixes
 
 let set_head = update_ref "HEAD"
 
