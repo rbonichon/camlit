@@ -8,8 +8,6 @@ val commit : message:string -> Hash.t
 
 val checkout : Hash.t -> unit
 
-val tag : string -> unit
-
-val tag_oid : Hash.t -> string -> unit
+val tag_oid : string -> Hash.t -> unit
 
 val get_oid : string -> Hash.t

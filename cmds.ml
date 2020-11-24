@@ -30,7 +30,7 @@ let wrap n ppf s =
   in
   loop true 0
 
-let log ?(oid = Data.get_head ()) () =
+let log oid  =
   let rec loop = function
     | None -> Format.print_flush ()
     | Some oid ->
@@ -38,6 +38,6 @@ let log ?(oid = Data.get_head ()) () =
         Format.printf "commit %a@\n%a@\n@." Hash.pp oid (wrap 4) cmt.message;
         loop cmt.parent
   in
-  loop oid
+  loop (Some oid)
 
 let checkout = Base.checkout

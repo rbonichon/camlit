@@ -107,14 +107,9 @@ let checkout oid =
   read_tree commit.oid;
   Data.set_head oid
 
-let tag_oid oid name =
+let tag_oid name oid =
   let tagfile = File._tag (Filename.concat "tags" name) in
   Data.update_ref tagfile oid
-
-let tag name =
-  match Data.get_head () with
-  | Some oid -> tag_oid oid name
-  | None -> failwith "No head"
 
 let get_oid name =
   match Data.find_ref name with Some oid -> oid | None -> Hash.of_hex name

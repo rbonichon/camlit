@@ -22,6 +22,17 @@ end
 
 let umsg = "Too bad"
 
+
+let with_oid ?err_msg k args =
+  try 
+    let oid =
+      match args with 
+      | oid :: _ -> Base.get_oid oid
+      | [] -> Option.get (Data.get_head ())
+    in k oid
+  with
+  | _ -> match err_msg with None -> failwith "Unable to get oid" | Some emsg -> failwith emsg
+
 let () =
   let subcommands =
     let open Subcommand in
@@ -46,11 +57,7 @@ let () =
         name = "cat-file";
         description = "Cat the file designated by the given oid";
         args = [];
-        action =
-          (fun oids ->
-            match oids with
-            | oid :: _ -> Cmds.cat_file (Base.get_oid oid)
-            | [] -> assert false);
+        action = with_oid Cmds.cat_file 
       };
       {
         name = "write-tree";
@@ -93,32 +100,22 @@ let () =
         name = "log";
         description = "Log commits";
         args = [];
-        action =
-          (fun oids ->
-            match oids with
-            | oid :: _ ->
-                let oid = Some (Base.get_oid oid) in
-                Cmds.log ~oid ()
-            | [] -> Cmds.log ());
+        action = with_oid Cmds.log;
       };
       {
         name = "checkout";
         description = "Checkout given commit id";
         args = [];
-        action =
-          (fun oids ->
-            match oids with
-            | oid :: _ -> Cmds.checkout (Base.get_oid oid)
-            | [] -> failwith "checkout expects a commit id");
+        action = with_oid Cmds.checkout
       };
       {
         name = "tag";
         description = "Tag a specific commit";
         args = [];
-        action =
+        action = 
           (function
-          | [ tagname ] -> Base.tag tagname
-          | [ oid; tagname ] -> Base.tag_oid (Base.get_oid oid) tagname
+          | [ tagname ] -> Base.tag_oid tagname (Option.get @@ Data.get_head ()) 
+          | [ oid; tagname ] -> Base.tag_oid tagname (Base.get_oid oid) 
           | _ -> assert false);
       };
     ]
