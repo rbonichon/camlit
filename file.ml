@@ -14,6 +14,8 @@ let _ref = Filename.concat default_directory
 
 let _tag = Filename.concat "refs"
 
+let _head = Filename.concat heads_directory 
+
 (* object is reserved in OCaml *)
 let _object oid = Filename.concat objects_directory (Hash.to_string oid)
 

@@ -1,9 +1,3 @@
-type oid = Hash.t
-
-type oid_set = Hash.Set.t
-
-type refname = string
-
 type path = string 
 
 let hash_object obj =

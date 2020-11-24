@@ -11,3 +11,5 @@ val checkout : Hash.t -> unit
 val tag_oid : string -> Hash.t -> unit
 
 val get_oid : string -> Hash.t
+
+val create_branch : Types.branch_name -> Types.oid -> unit 

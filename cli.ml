@@ -117,7 +117,14 @@ let () =
     ]
   in
   List.iter Subcommand.add subcommands;
-  Subcommand.create ~name:"show" ~description:"Show the refs" (with_oid Cmds.show)
+  Subcommand.create ~name:"show" ~description:"Show the refs" (with_oid Cmds.show);
+  Subcommand.create ~name:"branch" ~description:"Create a new branch"
+    (function
+     | [name] -> Base.create_branch name (Option.get @@ Data.get_head ())
+     | [name; oid] -> Base.create_branch name (Base.get_oid oid)
+     | _ -> failwith "usage: branch name [oid]"
+    )
+
 
 let parse () =
   let args = ref [] in

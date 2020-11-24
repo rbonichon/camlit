@@ -2,7 +2,6 @@ type t = string
 
 module Set = Set.Make(String)
 
-
 let of_string s = Digest.string s
 
 let of_file = Digest.file

@@ -113,3 +113,7 @@ let tag_oid name oid =
 
 let get_oid name =
   match Data.find_ref name with Some oid -> oid | None -> Hash.of_hex name
+
+let create_branch name oid =
+  Data.update_ref (File._head name) oid;
+  Format.printf "Branch %s created at %a@." name Hash.pp oid

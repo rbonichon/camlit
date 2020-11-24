@@ -1,25 +1,19 @@
-type oid = Hash.t
-
-type oid_set = Hash.Set.t
-
-type refname = string 
-
 type path = string 
 
-val set_head : oid -> unit
+val set_head : Types.oid -> unit
 (** [set_head] *)
 
-val get_head : unit -> oid option
+val get_head : unit -> Types.oid option
 (** [get_head] *)
 
-val get_ref : ?under:path -> refname -> oid option
+val get_ref : ?under:path -> Types.refname -> Types.oid option
 (** [get_ref ~under refname] retrieves the hash value contained in reffile
    [refname] under directory [under], if specified.
    
    [under] defaults to [File.default_directory]
  *)
 
-val find_ref : refname -> oid option
+val find_ref : Types.refname -> Types.oid option
 (** [find_ref refname] is like [get_ref] but searches for the reffile under 
     the following directory, in that order 
     - [File.default_directory]
@@ -28,32 +22,30 @@ val find_ref : refname -> oid option
     - [File.heads_directory]
  *)
 
-val update_ref : refname -> oid -> unit
+val update_ref : Types.refname -> Types.oid -> unit
 (** [update_ref] *)
 
-val hash_string : string -> oid
+val hash_string : string -> Types.oid
 (** [hash_string] *)
 
-val get_object : oid -> string Objects.t
+val get_object : Types.oid -> string Objects.t
 (** [get_object] *)
 
-val hash_object : string Objects.t -> oid
+val hash_object : string Objects.t -> Types.oid
 (** [hash_object] *)
 
-val get_commit : oid -> Objects.commit
+val get_commit : Types.oid -> Objects.commit
 (** [get_commit] *)
 
-val get_tree : oid -> string
+val get_tree : Types.oid -> string
 (** [get_tree] *)
 
-val get_blob : oid -> string
+val get_blob : Types.oid -> string
 (** [get_blob] *)
 
-
 (** [get_refs] *)
-val get_refs: unit -> (refname * oid) list
-
+val get_refs: unit -> (Types.refname * Types.oid) list
 
 (** [predecessors oids] computes the transitive closure of predecessors for
    these oids *)
-val predecessors: oid list -> oid list ;;
+val predecessors: Types.oid list -> Types.oid list ;;
