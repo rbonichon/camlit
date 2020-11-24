@@ -32,7 +32,7 @@ let rec write_tree ~directory =
       | Objects.Blob (oid, path) ->
           Format.fprintf ppf "blob %a %s@," Hash.pp oid path
       | Objects.Tree (oid, path) ->
-         Format.fprintf ppf "tree %a %s@," Hash.pp oid path
+          Format.fprintf ppf "tree %a %s@," Hash.pp oid path
       | Objects.Commit _ -> assert false)
     entries;
   Format.pp_close_box ppf ();
@@ -49,9 +49,11 @@ let _tree_entries oid =
              | "blob" -> Objects.blob (oid, name)
              | "tree" -> Objects.tree (oid, name)
              | typ ->
-                let msg =
-                  Format.asprintf "unexpected type for tree entry (%s) oid %s" typ oid in
-               failwith msg ))
+                 let msg =
+                   Format.asprintf "unexpected type for tree entry (%s) oid %s"
+                     typ oid
+                 in
+                 failwith msg))
 
 let get_tree oid path =
   let h = Hashtbl.create 7 in
@@ -62,7 +64,7 @@ let get_tree oid path =
         | Objects.Blob (oid, name) ->
             Hashtbl.add h (Filename.concat path name) (Hash.of_hex oid)
         | Objects.Tree (oid, name) ->
-           loop (Hash.of_hex oid) (Filename.concat path name)
+            loop (Hash.of_hex oid) (Filename.concat path name)
         | Objects.Commit _ -> ())
       entries
   in
@@ -96,11 +98,9 @@ let commit ~message =
   let parent = Data.get_head () in
   let oid = Data.hash_object (Objects.commit dir_oid ?parent message) in
   Data.set_head oid;
-  oid 
+  oid
 
-
-let get_commit oid =
-  Data.get_commit oid 
+let get_commit oid = Data.get_commit oid
 
 let checkout oid =
   let commit = get_commit oid in
@@ -108,10 +108,14 @@ let checkout oid =
   Data.set_head oid
 
 let tag_oid oid name =
-  let tagfile = File._tag (Filename.concat "tags" name) in 
-  Data.update_ref tagfile oid 
-  
+  let tagfile = File._tag (Filename.concat "tags" name) in
+  Data.update_ref tagfile oid
+
 let tag name =
   match Data.get_head () with
   | Some oid -> tag_oid oid name
   | None -> failwith "No head"
+
+let get_oid name =
+  Format.printf "get oid : %s@." name;
+  match Data.get_ref name with Some oid -> oid | None -> Hash.of_hex name

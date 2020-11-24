@@ -48,7 +48,9 @@ let () =
         args = [];
         action =
           (fun oids ->
-            match oids with oid :: _ -> Cmds.cat_file oid | [] -> assert false);
+            match oids with
+            | oid :: _ -> Cmds.cat_file (Base.get_oid oid)
+            | [] -> assert false);
       };
       {
         name = "write-tree";
@@ -65,7 +67,9 @@ let () =
         args = [];
         action =
           (fun l ->
-            match l with oid :: _ -> Base.read_tree (Hash.of_hex oid) | [] -> assert false);
+            match l with
+            | oid :: _ -> Base.read_tree (Base.get_oid oid)
+            | [] -> assert false);
       };
       (let msg = ref None in
        {
@@ -82,42 +86,41 @@ let () =
              match !msg with
              | None -> failwith "Committing requires a non-empty commit message"
              | Some message ->
-                let oid = Base.commit ~message in
-                Format.printf "%a@." Hash.pp oid 
-           );
-       }
-      );
-      { name = "log";
+                 let oid = Base.commit ~message in
+                 Format.printf "%a@." Hash.pp oid);
+       });
+      {
+        name = "log";
         description = "Log commits";
         args = [];
         action =
           (fun oids ->
             match oids with
             | oid :: _ ->
-               let oid = Some (Hash.of_hex oid) in
-               Cmds.log ~oid ()
-            | [] -> Cmds.log ())
+                let oid = Some (Base.get_oid oid) in
+                Cmds.log ~oid ()
+            | [] -> Cmds.log ());
       };
-      { name = "checkout";
+      {
+        name = "checkout";
         description = "Checkout given commit id";
         args = [];
-        action = (fun oids ->
-          match oids with
-          | oid :: _ ->
-             Cmds.checkout (Hash.of_hex oid);
-          | [] -> failwith "checkout expects a commit id"
-        )
+        action =
+          (fun oids ->
+            match oids with
+            | oid :: _ -> Cmds.checkout (Base.get_oid oid)
+            | [] -> failwith "checkout expects a commit id");
       };
-      { name = "tag";
+      {
+        name = "tag";
         description = "Tag a specific commit";
         args = [];
-        action = 
-          function 
-          | [tagname] -> Base.tag tagname 
-          | oid :: [tagname] -> Base.tag_oid (Hash.of_hex oid) tagname
-          | _ -> assert false 
-      }
-      
+        action =
+          (function
+          | [ tagname ] -> Base.tag tagname
+          | [ oid; tagname ] -> Base.tag_oid (Base.get_oid oid) tagname
+          | _ -> assert false);
+      };
     ]
   in
   List.iter Subcommand.add subcommands

@@ -4,12 +4,9 @@
 
 type contents = string
 
-type commit = { oid : Hash.t; parent: Hash.t option; message: string; }
+type commit = { oid : Hash.t; parent : Hash.t option; message : string }
 
-type _ t =
-  | Tree: 'a -> 'a t
-  | Blob : 'a -> 'a t 
-  | Commit: commit -> 'a t 
+type _ t = Tree : 'a -> 'a t | Blob : 'a -> 'a t | Commit : commit -> 'a t
 
 (* type 'a t = Tree of 'a | Blob of 'a | Commit of commit *)
 

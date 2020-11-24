@@ -14,7 +14,10 @@ let check_object_type objstr o =
   | Some ostr ->
       let otyp =
         let open Objects in
-        match o with Tree _ -> "tree" | Blob _ -> "blob" | Commit _ -> "commit"
+        match o with
+        | Tree _ -> "tree"
+        | Blob _ -> "blob"
+        | Commit _ -> "commit"
       in
       if ostr <> otyp then
         let msg =
@@ -25,11 +28,13 @@ let check_object_type objstr o =
 let get_object oid = File.(read (_object oid)) |> Objects.of_string
 
 let get_commit oid =
-  match get_object oid with 
+  match get_object oid with
   | Objects.Commit v -> v
   | _ ->
-     let msg = Format.asprintf "%a does not correspond to a commit" Hash.pp oid in
-     failwith msg 
+      let msg =
+        Format.asprintf "%a does not correspond to a commit" Hash.pp oid
+      in
+      failwith msg
 
 let get_tree oid =
   match get_object oid with
@@ -39,8 +44,7 @@ let get_tree oid =
 let get_blob oid =
   match get_object oid with
   | Objects.Blob contents -> contents
-  |  _ -> assert false
-
+  | _ -> assert false
 
 let update_ref refname oid =
   let file = File._ref refname in
@@ -53,11 +57,11 @@ let update_ref refname oid =
 
 let get_ref refname =
   let file = File._ref refname in
-  if Sys.file_exists file then 
+  Format.printf "get ref %s@." file;
+  if Sys.file_exists file then
     File.read file |> String.trim |> Hash.of_hex |> Option.some
-  else None 
+  else None
 
 let set_head = update_ref "HEAD"
 
 let get_head () = get_ref "HEAD"
-
