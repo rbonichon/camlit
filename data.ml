@@ -8,23 +8,6 @@ let hash_object obj =
 
 let hash_string s = Objects.blob s |> hash_object
 
-let check_object_type objstr o =
-  match objstr with
-  | None -> ()
-  | Some ostr ->
-      let otyp =
-        let open Objects in
-        match o with
-        | Tree _ -> "tree"
-        | Blob _ -> "blob"
-        | Commit _ -> "commit"
-      in
-      if ostr <> otyp then
-        let msg =
-          Printf.sprintf "Object type mismatch. Expected %s, got %s" ostr otyp
-        in
-        failwith msg
-
 let get_object oid = File.(read (_object oid)) |> Objects.of_string
 
 let get_commit oid =
