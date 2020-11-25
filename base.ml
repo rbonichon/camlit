@@ -109,11 +109,13 @@ let checkout oid =
 
 let tag_oid name oid =
   let tagfile = File._tag (Filename.concat "tags" name) in
-  Data.update_ref tagfile oid
+  Data.update_ref (Refname.create tagfile) oid
 
 let get_oid name =
-  match Data.find_ref name with Some oid -> oid | None -> Oid.of_hex name
+  match Data.find_ref (Refname.create name) with
+  | Some oid -> oid
+  | None -> Oid.of_hex name
 
 let create_branch name oid =
-  Data.update_ref (File._head name) oid;
+  Data.update_ref (Refname.create @@ File._head name) oid;
   Format.printf "Branch %s created at %a@." name Oid.pp oid

@@ -46,7 +46,8 @@ let show _oid =
   let ppf = std_formatter in
   pp_open_vbox ppf 0;
   List.iter
-    (fun (refname, oid) -> fprintf ppf "@[<h>%s %a@]@," refname Oid.pp oid)
+    (fun (refname, oid) ->
+      fprintf ppf "@[<h>%a %a@]@," Refname.pp refname Oid.pp oid)
     refs;
   pp_close_box ppf ();
   pp_print_flush ppf ();

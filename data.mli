@@ -6,14 +6,14 @@ val set_head : Oid.t -> unit
 val get_head : unit -> Oid.t option
 (** [get_head] *)
 
-val get_ref : ?under:path -> Types.refname -> Oid.t option
+val get_ref : ?under:path -> Refname.t -> Oid.t option
 (** [get_ref ~under refname] retrieves the hash value contained in reffile
    [refname] under directory [under], if specified.
    
    [under] defaults to [File.default_directory]
  *)
 
-val find_ref : Types.refname -> Oid.t option
+val find_ref : Refname.t -> Oid.t option
 (** [find_ref refname] is like [get_ref] but searches for the reffile under 
     the following directory, in that order 
     - [File.default_directory]
@@ -22,7 +22,7 @@ val find_ref : Types.refname -> Oid.t option
     - [File.heads_directory]
  *)
 
-val update_ref : Types.refname -> Oid.t -> unit
+val update_ref : Refname.t -> Oid.t -> unit
 (** [update_ref] *)
 
 val hash_string : string -> Oid.t
@@ -43,7 +43,7 @@ val get_tree : Oid.t -> string
 val get_blob : Oid.t -> string
 (** [get_blob] *)
 
-val get_refs : unit -> (Types.refname * Oid.t) list
+val get_refs : unit -> (Refname.t * Oid.t) list
 (** [get_refs] *)
 
 val predecessors : Oid.t list -> Oid.t list

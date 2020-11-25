@@ -1,5 +1,7 @@
 type path = string
 
+open Refname
+
 let hash_object obj =
   let oid = Objects.hash obj in
   let oc = open_out_bin (File._object oid) in
@@ -31,7 +33,7 @@ let get_blob oid =
   | Objects.Blob contents -> contents
   | _ -> assert false
 
-let update_ref refname oid =
+let update_ref (Refname refname) oid =
   let file = File._ref refname in
   File.makedirs file;
   let oc = open_out_bin file in
@@ -45,7 +47,9 @@ let get_hash_from_file filename =
     File.read filename |> String.trim |> Oid.of_hex |> Option.some
   else None
 
-let get_ref ?under refname =
+open Refname
+
+let get_ref ?under (Refname refname) =
   let filename =
     match under with
     | None -> File._ref refname
@@ -53,7 +57,7 @@ let get_ref ?under refname =
   in
   get_hash_from_file filename
 
-let find_ref refname =
+let find_ref (Refname refname) =
   let prefixes =
     [
       File.default_directory;
@@ -72,14 +76,18 @@ let find_ref refname =
   in
   find prefixes
 
-let set_head = update_ref "HEAD"
+let head = Refname.create "HEAD"
 
-let get_head () = get_ref "HEAD"
+let set_head = update_ref head
+
+let get_head () = get_ref head
 
 let get_refs () =
   let walk = File.walk File.refs_directory in
   List.map
-    (fun filename -> (filename, Option.get @@ get_ref ~under:"." filename))
+    (fun filename ->
+      let _ref = Refname.create filename in
+      (_ref, Option.get @@ get_ref ~under:"." _ref))
     walk.files
 
 let predecessors oids =
