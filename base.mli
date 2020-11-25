@@ -1,15 +1,15 @@
-val write_tree : directory:string -> Hash.t
+val write_tree : directory:string -> Oid.t
 (** [write_tree directory] *)
 
-val read_tree : Hash.t -> unit
+val read_tree : Oid.t -> unit
 (** [read_tree] *)
 
-val commit : message:string -> Hash.t
+val commit : message:string -> Oid.t
 
-val checkout : Hash.t -> unit
+val checkout : Oid.t -> unit
 
-val tag_oid : string -> Hash.t -> unit
+val tag_oid : string -> Oid.t -> unit
 
-val get_oid : string -> Hash.t
+val get_oid : string -> Oid.t
 
-val create_branch : Types.branch_name -> Types.oid -> unit 
+val create_branch : Types.branch_name -> Oid.t -> unit

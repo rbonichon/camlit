@@ -12,7 +12,7 @@ let init () =
   create_directory objects_directory
 
 let hash_file file =
-  File.read file |> Data.hash_string |> Format.printf "%a@." Hash.pp
+  File.read file |> Data.hash_string |> Format.printf "%a@." Oid.pp
 
 let cat_file oid =
   Data.get_object oid |> Objects.contents |> Format.printf "%s@."
@@ -31,15 +31,12 @@ let wrap n ppf s =
   loop true 0
 
 let log oid =
-  let oids = Data.predecessors [oid] in
-  Format.printf
-    "@[<v 0>%a@]"
-    (Format.pp_print_list ~pp_sep:Format.pp_print_cut
-       (fun ppf oid ->
+  let oids = Data.predecessors [ oid ] in
+  Format.printf "@[<v 0>%a@]"
+    (Format.pp_print_list ~pp_sep:Format.pp_print_cut (fun ppf oid ->
          let cmt = Data.get_commit oid in
-         Format.fprintf ppf"commit %a@,%a@," Hash.pp oid (wrap 4) cmt.message
-       ))
-     oids
+         Format.fprintf ppf "commit %a@,%a@," Oid.pp oid (wrap 4) cmt.message))
+    oids
 
 let checkout = Base.checkout
 
@@ -49,21 +46,20 @@ let show _oid =
   let ppf = std_formatter in
   pp_open_vbox ppf 0;
   List.iter
-    (fun (refname, oid) -> fprintf ppf "@[<h>%s %a@]@," refname Hash.pp oid)
+    (fun (refname, oid) -> fprintf ppf "@[<h>%s %a@]@," refname Oid.pp oid)
     refs;
   pp_close_box ppf ();
   pp_print_flush ppf ();
 
   pp_open_vbox ppf 0;
-  let oid_set = Data.predecessors (List.map snd refs) in 
-  List.iter 
+  let oid_set = Data.predecessors (List.map snd refs) in
+  List.iter
     (fun oid ->
       let commit = Data.get_commit oid in
-      Format.printf "@[<v 2>%a%a@]@," Hash.pp oid
+      Format.printf "@[<v 2>%a%a@]@," Oid.pp oid
         (fun ppf -> function None -> ()
-          | Some oid -> Format.fprintf ppf "@,Parent: %a" Hash.pp oid)
+          | Some oid -> Format.fprintf ppf "@,Parent: %a" Oid.pp oid)
         commit.parent)
     oid_set;
   pp_close_box ppf ();
-  pp_print_flush ppf ();
-
+  pp_print_flush ppf ()

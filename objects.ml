@@ -1,6 +1,6 @@
 type contents = string
 
-type commit = { oid : Hash.t; parent : Hash.t option; message : string }
+type commit = { oid : Oid.t; parent : Oid.t option; message : string }
 
 type _ t = Tree : 'a -> 'a t | Blob : 'a -> 'a t | Commit : commit -> 'a t
 
@@ -33,10 +33,10 @@ let read_commit s =
     | line :: lines -> (
         match String.split_on_char ' ' line with
         | [ "tree"; oid ] ->
-            coid := Some (Hash.of_hex oid);
+            coid := Some (Oid.of_hex oid);
             read_keys lines
         | [ "parent"; oid ] ->
-            parent := Some (Hash.of_hex oid);
+            parent := Some (Oid.of_hex oid);
             read_keys lines
         | _ -> read_message l )
   in
@@ -68,13 +68,13 @@ let pp_contents ppf t =
   match t with
   | Tree contents | Blob contents -> Format.pp_print_string ppf contents
   | Commit { oid; parent; message } ->
-      Format.fprintf ppf "tree %a@\n" Hash.pp oid;
+      Format.fprintf ppf "tree %a@\n" Oid.pp oid;
       ( match parent with
-      | Some s -> Format.fprintf ppf "parent %a@\n" Hash.pp s
+      | Some s -> Format.fprintf ppf "parent %a@\n" Oid.pp s
       | None -> () );
       Format.pp_print_string ppf message
 
 let to_string t =
   Format.asprintf "%s%c%a" (type_str t) object_type_delimiter pp_contents t
 
-let hash t = Hash.of_string @@ to_string t
+let hash t = Oid.of_string @@ to_string t

@@ -4,7 +4,7 @@
 
 type contents = string
 
-type commit = { oid : Hash.t; parent : Hash.t option; message : string }
+type commit = { oid : Oid.t; parent : Oid.t option; message : string }
 
 type _ t = Tree : 'a -> 'a t | Blob : 'a -> 'a t | Commit : commit -> 'a t
 
@@ -16,8 +16,8 @@ val tree : 'a -> 'a t
 
 val blob : 'a -> 'a t
 
-val commit : ?parent:Hash.t -> Hash.t -> string -> 'a t
+val commit : ?parent:Oid.t -> Oid.t -> string -> 'a t
 
 val contents : contents t -> string
 
-val hash : contents t -> Hash.t
+val hash : contents t -> Oid.t

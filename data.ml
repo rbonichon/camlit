@@ -1,4 +1,4 @@
-type path = string 
+type path = string
 
 let hash_object obj =
   let oid = Objects.hash obj in
@@ -17,7 +17,7 @@ let get_commit oid =
   | Objects.Commit v -> v
   | _ ->
       let msg =
-        Format.asprintf "%a does not correspond to a commit" Hash.pp oid
+        Format.asprintf "%a does not correspond to a commit" Oid.pp oid
       in
       failwith msg
 
@@ -36,13 +36,13 @@ let update_ref refname oid =
   File.makedirs file;
   let oc = open_out_bin file in
   let ppf = Format.formatter_of_out_channel oc in
-  Hash.pp ppf oid;
+  Oid.pp ppf oid;
   Format.pp_print_flush ppf ();
   close_out oc
 
 let get_hash_from_file filename =
   if Sys.file_exists filename then
-    File.read filename |> String.trim |> Hash.of_hex |> Option.some
+    File.read filename |> String.trim |> Oid.of_hex |> Option.some
   else None
 
 let get_ref ?under refname =
@@ -79,21 +79,20 @@ let get_head () = get_ref "HEAD"
 let get_refs () =
   let walk = File.walk File.refs_directory in
   List.map
-    (fun filename ->
-      (filename, Option.get @@ get_ref ~under:"." filename))
+    (fun filename -> (filename, Option.get @@ get_ref ~under:"." filename))
     walk.files
 
 let predecessors oids =
   let rec loop visited set = function
     | [] -> set
     | oid :: oids ->
-        if Hash.Set.mem oid visited then loop visited set oids
+        if Oid.Set.mem oid visited then loop visited set oids
         else
           let set = oid :: set in
           let oids =
             let commit = get_commit oid in
             match commit.parent with None -> oids | Some oid -> oid :: oids
           in
-          loop (Hash.Set.add oid visited) set oids
+          loop (Oid.Set.add oid visited) set oids
   in
-  loop Hash.Set.empty [] oids
+  loop Oid.Set.empty [] oids

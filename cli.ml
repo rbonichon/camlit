@@ -32,13 +32,13 @@ end
 let umsg = "Too bad"
 
 let with_oid ?err_msg k args =
-  let _ = err_msg in 
-    let oid =
-      match args with
-      | oid :: _ -> Base.get_oid oid
-      | [] -> Option.get (Data.get_head ())
-    in
-    k oid
+  let _ = err_msg in
+  let oid =
+    match args with
+    | oid :: _ -> Base.get_oid oid
+    | [] -> Option.get (Data.get_head ())
+  in
+  k oid
 
 let () =
   let subcommands =
@@ -62,7 +62,7 @@ let () =
         action =
           (fun _ ->
             let oid = Base.write_tree ~directory:"." in
-            Format.printf "%a@." Hash.pp oid);
+            Format.printf "%a@." Oid.pp oid);
       };
       {
         name = "read-tree";
@@ -90,7 +90,7 @@ let () =
              | None -> failwith "Committing requires a non-empty commit message"
              | Some message ->
                  let oid = Base.commit ~message in
-                 Format.printf "%a@." Hash.pp oid);
+                 Format.printf "%a@." Oid.pp oid);
        });
       {
         name = "log";
@@ -117,14 +117,12 @@ let () =
     ]
   in
   List.iter Subcommand.add subcommands;
-  Subcommand.create ~name:"show" ~description:"Show the refs" (with_oid Cmds.show);
-  Subcommand.create ~name:"branch" ~description:"Create a new branch"
-    (function
-     | [name] -> Base.create_branch name (Option.get @@ Data.get_head ())
-     | [name; oid] -> Base.create_branch name (Base.get_oid oid)
-     | _ -> failwith "usage: branch name [oid]"
-    )
-
+  Subcommand.create ~name:"show" ~description:"Show the refs"
+    (with_oid Cmds.show);
+  Subcommand.create ~name:"branch" ~description:"Create a new branch" (function
+    | [ name ] -> Base.create_branch name (Option.get @@ Data.get_head ())
+    | [ name; oid ] -> Base.create_branch name (Base.get_oid oid)
+    | _ -> failwith "usage: branch name [oid]")
 
 let parse () =
   let args = ref [] in

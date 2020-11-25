@@ -30,9 +30,9 @@ let rec write_tree ~directory =
   List.iter
     (function
       | Objects.Blob (oid, path) ->
-          Format.fprintf ppf "blob %a %s@," Hash.pp oid path
+          Format.fprintf ppf "blob %a %s@," Oid.pp oid path
       | Objects.Tree (oid, path) ->
-          Format.fprintf ppf "tree %a %s@," Hash.pp oid path
+          Format.fprintf ppf "tree %a %s@," Oid.pp oid path
       | Objects.Commit _ -> assert false)
     entries;
   Format.pp_close_box ppf ();
@@ -62,9 +62,9 @@ let get_tree oid path =
     List.iter
       (function
         | Objects.Blob (oid, name) ->
-            Hashtbl.add h (Filename.concat path name) (Hash.of_hex oid)
+            Hashtbl.add h (Filename.concat path name) (Oid.of_hex oid)
         | Objects.Tree (oid, name) ->
-            loop (Hash.of_hex oid) (Filename.concat path name)
+            loop (Oid.of_hex oid) (Filename.concat path name)
         | Objects.Commit _ -> ())
       entries
   in
@@ -112,8 +112,8 @@ let tag_oid name oid =
   Data.update_ref tagfile oid
 
 let get_oid name =
-  match Data.find_ref name with Some oid -> oid | None -> Hash.of_hex name
+  match Data.find_ref name with Some oid -> oid | None -> Oid.of_hex name
 
 let create_branch name oid =
   Data.update_ref (File._head name) oid;
-  Format.printf "Branch %s created at %a@." name Hash.pp oid
+  Format.printf "Branch %s created at %a@." name Oid.pp oid
