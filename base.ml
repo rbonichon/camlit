@@ -14,11 +14,11 @@ let rec write_tree ~directory =
             let open Objects in
             if Sys.is_directory path then
               let oid = write_tree ~directory:path in
-              tree (oid, path)
+              tree ((oid :> Hash.t), path)
             else
               (* it is a file *)
               (* Format.printf "%s " path; *)
-              let oid = File.read path |> Data.hash_string in
+              let (Oid oid) = File.read path |> Data.hash_string in
               blob (oid, path)
           in
           obj :: entries
@@ -37,7 +37,8 @@ let rec write_tree ~directory =
     entries;
   Format.pp_close_box ppf ();
   let o = Objects.tree (Format.flush_str_formatter ()) in
-  Data.hash_object o
+  let (Oid o) = Data.hash_object o in
+  o
 
 let _tree_entries oid =
   let contents = Data.get_tree oid in
@@ -64,7 +65,7 @@ let get_tree oid path =
         | Objects.Blob (oid, name) ->
             Hashtbl.add h (Filename.concat path name) (Hash.of_hex oid)
         | Objects.Tree (oid, name) ->
-            loop (Hash.of_hex oid) (Filename.concat path name)
+            loop (Reference.oid (Hash.of_hex oid)) (Filename.concat path name)
         | Objects.Commit _ -> ())
       entries
   in
@@ -80,14 +81,15 @@ let empty_directory path =
       (delete_with (fun dirname -> try Unix.rmdir dirname with _ -> ()))
       w.directories )
 
-let read_tree oid =
+let read_tree (Reference.Oid _ as r) =
   let path = "." in
   empty_directory path;
-  let h = get_tree oid path in
+  let h = get_tree r path in
   Hashtbl.iter
     (fun name oid ->
       let oc = open_out_bin name in
-      Printf.fprintf oc "%s" (Data.get_object oid |> Objects.contents);
+      Printf.fprintf oc "%s"
+        (Data.get_object (Reference.oid oid) |> Objects.contents);
       flush oc;
       close_out oc)
     h
@@ -95,25 +97,33 @@ let read_tree oid =
 let commit ~message =
   print_endline message;
   let dir_oid = write_tree ~directory:"." in
-  let parent = Data.get_head () in
+  let parent =
+    match Data.get_head () with
+    | Some (Reference.Direct (Oid parent)) -> Some parent
+    | None -> None
+  in
   let oid = Data.hash_object (Objects.commit dir_oid ?parent message) in
-  Data.set_head oid;
+  Data.set_head (Reference.direct oid);
   oid
 
 let get_commit oid = Data.get_commit oid
 
 let checkout oid =
   let commit = get_commit oid in
-  read_tree commit.oid;
-  Data.set_head oid
+  read_tree (Reference.oid commit.oid);
+  Data.set_head (Reference.direct oid)
 
 let tag_oid name oid =
   let tagfile = File._tag (Filename.concat "tags" name) in
-  Data.update_ref tagfile oid
+  Data.update_ref Reference.(symbolic @@ refname tagfile) (Reference.direct oid)
 
-let get_oid name =
-  match Data.find_ref name with Some oid -> oid | None -> Hash.of_hex name
+let get_oid (Reference.Refname name as r) =
+  match Data.find_ref r with
+  | Some oid -> oid
+  | None -> Reference.oid @@ Hash.of_hex name
 
-let create_branch name oid =
-  Data.update_ref (File._head name) oid;
-  Format.printf "Branch %s created at %a@." name Hash.pp oid
+let create_branch name (Reference.Oid h as oid) =
+  Data.update_ref
+    Reference.(symbolic @@ refname (File._head name))
+    (Reference.direct oid);
+  Format.printf "Branch %s created at %a@." name Hash.pp h

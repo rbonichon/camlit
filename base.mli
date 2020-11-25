@@ -1,15 +1,15 @@
 val write_tree : directory:string -> Hash.t
 (** [write_tree directory] *)
 
-val read_tree : Hash.t -> unit
+val read_tree : Reference.oid -> unit
 (** [read_tree] *)
 
-val commit : message:string -> Hash.t
+val commit : message:string -> Reference.oid
 
-val checkout : Hash.t -> unit
+val checkout : Reference.oid -> unit
 
-val tag_oid : string -> Hash.t -> unit
+val tag_oid : string -> Reference.oid -> unit
 
-val get_oid : string -> Hash.t
+val get_oid : Reference.refname -> Reference.oid
 
-val create_branch : Types.branch_name -> Types.oid -> unit 
+val create_branch : Types.branch_name -> Reference.oid -> unit

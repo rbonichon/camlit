@@ -31,14 +31,16 @@ end
 
 let umsg = "Too bad"
 
-let with_oid ?err_msg k args =
-  let _ = err_msg in 
-    let oid =
-      match args with
-      | oid :: _ -> Base.get_oid oid
-      | [] -> Option.get (Data.get_head ())
-    in
-    k oid
+let with_oid ?err_msg k (args : string list) =
+  let _ = err_msg in
+  let oid =
+    match args with
+    | oid :: _ -> Base.get_oid oid
+    | [] ->
+        let (Reference.Direct oid) = Option.get @@ Data.get_head () in
+        oid
+  in
+  k oid
 
 let () =
   let subcommands =
@@ -89,7 +91,7 @@ let () =
              match !msg with
              | None -> failwith "Committing requires a non-empty commit message"
              | Some message ->
-                 let oid = Base.commit ~message in
+                 let (Oid oid) = Base.commit ~message in
                  Format.printf "%a@." Hash.pp oid);
        });
       {
@@ -110,21 +112,29 @@ let () =
         args = [];
         action =
           (function
-          | [ tagname ] -> Base.tag_oid tagname (Option.get @@ Data.get_head ())
-          | [ oid; tagname ] -> Base.tag_oid tagname (Base.get_oid oid)
+          | [ tagname ] ->
+              let (Reference.Direct (Oid oid)) =
+                Option.get @@ Data.get_head ()
+              in
+              Base.tag_oid tagname oid
+          | [ oid; tagname ] ->
+              let (Oid h) = Base.get_oid oid in
+              Base.tag_oid tagname h
           | _ -> assert false);
       };
     ]
   in
   List.iter Subcommand.add subcommands;
-  Subcommand.create ~name:"show" ~description:"Show the refs" (with_oid Cmds.show);
-  Subcommand.create ~name:"branch" ~description:"Create a new branch"
-    (function
-     | [name] -> Base.create_branch name (Option.get @@ Data.get_head ())
-     | [name; oid] -> Base.create_branch name (Base.get_oid oid)
-     | _ -> failwith "usage: branch name [oid]"
-    )
-
+  Subcommand.create ~name:"show" ~description:"Show the refs"
+    (with_oid Cmds.show);
+  Subcommand.create ~name:"branch" ~description:"Create a new branch" (function
+    | [ name ] ->
+        let (Reference.Direct (Oid oid)) = Option.get @@ Data.get_head () in
+        Base.create_branch name oid
+    | [ name; oid ] ->
+        let (Oid oid) = Base.get_oid oid in
+        Base.create_branch name oid
+    | _ -> failwith "usage: branch name [oid]")
 
 let parse () =
   let args = ref [] in
