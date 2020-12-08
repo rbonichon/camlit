@@ -97,7 +97,7 @@ let commit ~message =
   let dir_oid = write_tree ~directory:"." in
   let parent = Data.get_head () in
   let oid = Data.hash_object (Objects.commit dir_oid ?parent message) in
-  Data.set_head oid;
+  Data.set_head (Ref.O oid);
   oid
 
 let get_commit oid = Data.get_commit oid
@@ -105,11 +105,11 @@ let get_commit oid = Data.get_commit oid
 let checkout oid =
   let commit = get_commit oid in
   read_tree commit.oid;
-  Data.set_head oid
+  Data.set_head (Ref.O oid)
 
 let tag_oid name oid =
   let tagfile = File._tag (Filename.concat "tags" name) in
-  Data.update_ref (Refname.create tagfile) oid
+  Data.update_ref (Refname.create tagfile) (Ref.O oid)
 
 let get_oid name =
   match Data.find_ref (Refname.create name) with
@@ -117,5 +117,5 @@ let get_oid name =
   | None -> Oid.of_hex name
 
 let create_branch name oid =
-  Data.update_ref (Refname.create @@ File._head name) oid;
+  Data.update_ref (Refname.create @@ File._head name) (Ref.O oid);
   Format.printf "Branch %s created at %a@." name Oid.pp oid

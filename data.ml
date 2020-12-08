@@ -57,19 +57,14 @@ let rec get_ref_loop _ref =
 
 let get_ref _ref = get_ref_loop _ref |> snd
 
-let update_ref refname oid =
-  let open Ref in
-  let _ref, _ = get_ref_loop (R refname) in
-  match _ref with
-  | R (Refname refname) ->
-      let file = File._ref refname in
-      File.makedirs file;
-      let oc = open_out_bin file in
-      let ppf = Format.formatter_of_out_channel oc in
-      Oid.pp ppf oid;
-      Format.pp_print_flush ppf ();
-      close_out oc
-  | O _ -> failwith "update_ref: expected a reference name not oid"
+let update_ref (Refname refname) _ref =
+  let file = File._ref refname in
+  File.makedirs file;
+  let oc = open_out_bin file in
+  let ppf = Format.formatter_of_out_channel oc in
+  Ref.pp ppf _ref;
+  Format.pp_print_flush ppf ();
+  close_out oc
 
 let find_ref (Refname refname) =
   let prefixes =

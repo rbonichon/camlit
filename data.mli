@@ -1,6 +1,6 @@
 type path = string
 
-val set_head : Oid.t -> unit
+val set_head : Ref.t -> unit
 (** [set_head] *)
 
 val get_head : unit -> Oid.t option
@@ -22,7 +22,7 @@ val find_ref : Refname.t -> Oid.t option
     - [File.heads_directory]
  *)
 
-val update_ref : Refname.t -> Oid.t -> unit
+val update_ref : Refname.t -> Ref.t -> unit
 (** [update_ref] *)
 
 val hash_string : string -> Oid.t
