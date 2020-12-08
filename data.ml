@@ -1,7 +1,5 @@
 type path = string
 
-open Refname
-
 let hash_object obj =
   let oid = Objects.hash obj in
   let oc = open_out_bin (File._object oid) in
@@ -40,15 +38,11 @@ let get_hash_from_file filename =
 
 open Refname
 
-let parse_ref s = Scanf.sscanf s "ref:%s" (fun s -> s)
-
 let get_ref_from_file filename =
-  let open Ref in
   if Sys.file_exists filename then
-    let contents = File.read filename |> String.trim in
-    match Oid.of_hex contents with
-    | oid -> Option.some (O oid)
-    | exception _ -> Some (R (Refname.create @@ parse_ref contents))
+    match Ref.of_string (File.read filename |> String.trim) with
+    | value -> Some value
+    | exception _ -> None
   else None
 
 let get_direct_ref = function
@@ -75,7 +69,7 @@ let update_ref refname oid =
       Oid.pp ppf oid;
       Format.pp_print_flush ppf ();
       close_out oc
-  | O _ -> failwith
+  | O _ -> failwith "update_ref: expected a reference name not oid"
 
 let find_ref (Refname refname) =
   let prefixes =
