@@ -6,7 +6,7 @@ val set_head : Oid.t -> unit
 val get_head : unit -> Oid.t option
 (** [get_head] *)
 
-val get_ref : ?under:path -> Refname.t -> Oid.t option
+val get_ref : Ref.t -> Oid.t option
 (** [get_ref ~under refname] retrieves the hash value contained in reffile
    [refname] under directory [under], if specified.
    
@@ -49,3 +49,6 @@ val get_refs : unit -> (Refname.t * Oid.t) list
 val predecessors : Oid.t list -> Oid.t list
 (** [predecessors oids] computes the transitive closure of predecessors for
    these oids *)
+
+val get_direct_ref : Ref.t -> Ref.t option
+(** [get_direct_ref] *)

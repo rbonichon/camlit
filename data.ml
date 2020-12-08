@@ -33,15 +33,6 @@ let get_blob oid =
   | Objects.Blob contents -> contents
   | _ -> assert false
 
-let update_ref (Refname refname) oid =
-  let file = File._ref refname in
-  File.makedirs file;
-  let oc = open_out_bin file in
-  let ppf = Format.formatter_of_out_channel oc in
-  Oid.pp ppf oid;
-  Format.pp_print_flush ppf ();
-  close_out oc
-
 let get_hash_from_file filename =
   if Sys.file_exists filename then
     File.read filename |> String.trim |> Oid.of_hex |> Option.some
@@ -49,13 +40,42 @@ let get_hash_from_file filename =
 
 open Refname
 
-let get_ref ?under (Refname refname) =
-  let filename =
-    match under with
-    | None -> File._ref refname
-    | Some dir -> Filename.concat dir refname
-  in
-  get_hash_from_file filename
+let parse_ref s = Scanf.sscanf s "ref:%s" (fun s -> s)
+
+let get_ref_from_file filename =
+  let open Ref in
+  if Sys.file_exists filename then
+    let contents = File.read filename |> String.trim in
+    match Oid.of_hex contents with
+    | oid -> Option.some (O oid)
+    | exception _ -> Some (R (Refname.create @@ parse_ref contents))
+  else None
+
+let get_direct_ref = function
+  | Ref.R (Refname r) -> get_ref_from_file (File._ref r)
+  | _ref -> Some _ref
+
+let rec get_ref_loop _ref =
+  match get_direct_ref _ref with
+  | None -> (_ref, None)
+  | Some (O oid) -> (_ref, Some oid)
+  | Some r -> get_ref_loop r
+
+let get_ref _ref = get_ref_loop _ref |> snd
+
+let update_ref refname oid =
+  let open Ref in
+  let _ref, _ = get_ref_loop (R refname) in
+  match _ref with
+  | R (Refname refname) ->
+      let file = File._ref refname in
+      File.makedirs file;
+      let oc = open_out_bin file in
+      let ppf = Format.formatter_of_out_channel oc in
+      Oid.pp ppf oid;
+      Format.pp_print_flush ppf ();
+      close_out oc
+  | O _ -> failwith
 
 let find_ref (Refname refname) =
   let prefixes =
@@ -80,14 +100,14 @@ let head = Refname.create "HEAD"
 
 let set_head = update_ref head
 
-let get_head () = get_ref head
+let get_head () = get_ref (R head)
 
 let get_refs () =
   let walk = File.walk File.refs_directory in
   List.map
     (fun filename ->
       let _ref = Refname.create filename in
-      (_ref, Option.get @@ get_ref ~under:"." _ref))
+      (_ref, Option.get @@ get_ref (R _ref)))
     walk.files
 
 let predecessors oids =
