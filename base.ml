@@ -102,11 +102,6 @@ let commit ~message =
 
 let get_commit oid = Data.get_commit oid
 
-let checkout oid =
-  let commit = get_commit oid in
-  read_tree commit.oid;
-  Data.set_head (Ref.O oid)
-
 let tag_oid name oid =
   let tagfile = File._tag (Filename.concat "tags" name) in
   Data.update_ref (Refname.create tagfile) (Ref.O oid)
@@ -119,3 +114,21 @@ let get_oid name =
 let create_branch name oid =
   Data.update_ref (Refname.create @@ File._head name) (Ref.O oid);
   Format.printf "Branch %s created at %a@." name Oid.pp oid
+
+let is_branch name =
+  let headfile = File._head name in
+  Sys.file_exists headfile
+  &&
+  match Ref.of_string @@ File.read headfile with
+  | exception _ -> false
+  | R _ | O _ -> true
+
+let checkout name =
+  let oid = get_oid name in
+  let commit = get_commit oid in
+  read_tree commit.oid;
+  let _ref =
+    if is_branch name then Ref.R (Refname.create @@ File._head name)
+    else Ref.O oid
+  in
+  Data.set_head _ref

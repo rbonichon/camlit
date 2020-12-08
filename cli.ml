@@ -102,7 +102,8 @@ let () =
         name = "checkout";
         description = "Checkout given commit id";
         args = [];
-        action = with_oid Cmds.checkout;
+        action =
+          (function _refstring :: _ -> Cmds.checkout _refstring | [] -> ());
       };
       {
         name = "tag";

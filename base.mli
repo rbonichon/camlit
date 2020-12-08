@@ -6,10 +6,12 @@ val read_tree : Oid.t -> unit
 
 val commit : message:string -> Oid.t
 
-val checkout : Oid.t -> unit
+val checkout : string -> unit
 
 val tag_oid : string -> Oid.t -> unit
 
 val get_oid : string -> Oid.t
 
 val create_branch : Types.branch_name -> Oid.t -> unit
+
+val is_branch : string -> bool
