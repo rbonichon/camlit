@@ -15,3 +15,6 @@ val get_oid : string -> Oid.t
 val create_branch : Types.branch_name -> Oid.t -> unit
 
 val is_branch : string -> bool
+
+val init : unit -> unit
+(** [init ()] setup the default structure of a git repository *)

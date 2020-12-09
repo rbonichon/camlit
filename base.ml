@@ -1,3 +1,14 @@
+let create_directory ?(warn = false) directory_name =
+  if warn && Sys.file_exists directory_name then
+    Format.eprintf "A directory or file named %s already exists@."
+      directory_name;
+  Unix.mkdir directory_name 0o700
+
+let init () =
+  create_directory File.default_directory;
+  create_directory File.objects_directory;
+  Data.set_head (Ref.R (Refname.create @@ File._head "master"))
+
 let is_ignored =
   let rexp = Str.regexp_string Filename.dir_sep in
   fun path -> List.mem ".camlit" (Str.split rexp path)
