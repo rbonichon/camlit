@@ -14,39 +14,67 @@ let commit ?parent oid message = Commit { oid; parent; message }
 
 let contents = function Tree c | Blob c -> c | Commit _ -> assert false
 
+(* let read_commit s =
+ *   let coid = ref None in
+ *   let parent = ref None in
+ *   let b = Buffer.create 1023 in
+ *   let lines = String.split_on_char '\n' s in
+ *   let rec read_message = function
+ *     | [] -> ()
+ *     | line :: lines ->
+ *         Buffer.add_string b line;
+ *         Buffer.add_char b '\n';
+ *         read_message lines
+ *   in
+ * 
+ *   let rec read_keys l =
+ *     match l with
+ *     | [] -> ()
+ *     | line :: lines -> (
+ *         match String.split_on_char ' ' line with
+ *         | [ "tree"; oid ] ->
+ *             coid := Some (Oid.of_hex oid);
+ *             read_keys lines
+ *         | [ "parent"; oid ] ->
+ *             parent := Some (Oid.of_hex oid);
+ *             read_keys lines
+ *         | _ -> read_message l )
+ *   in
+ * 
+ *   read_keys lines;
+ *   match !coid with
+ *   | None -> failwith "Could not find object id in commit object"
+ *   | Some oid ->
+ *       let parent = !parent in
+ *       commit ?parent oid (Buffer.contents b) *)
+
+let read_key_value ib =
+  Scanf.bscanf ib "%[a-z]@ %[a-f0-9]@\n" (fun k v -> (k, v))
+
+let read_key_values ib =
+  let rec loop acc =
+    Scanf.bscanf ib "%r%0c" read_key_value (fun kv c ->
+        let acc = kv :: acc in
+        if c = '\n' then acc else loop acc)
+  in
+  loop []
+
 let read_commit s =
-  let coid = ref None in
-  let parent = ref None in
-  let b = Buffer.create 1023 in
-  let lines = String.split_on_char '\n' s in
-  let rec read_message = function
-    | [] -> ()
-    | line :: lines ->
-        Buffer.add_string b line;
-        Buffer.add_char b '\n';
-        read_message lines
-  in
-
-  let rec read_keys l =
-    match l with
-    | [] -> ()
-    | line :: lines -> (
-        match String.split_on_char ' ' line with
-        | [ "tree"; oid ] ->
-            coid := Some (Oid.of_hex oid);
-            read_keys lines
-        | [ "parent"; oid ] ->
-            parent := Some (Oid.of_hex oid);
-            read_keys lines
-        | _ -> read_message l )
-  in
-
-  read_keys lines;
-  match !coid with
-  | None -> failwith "Could not find object id in commit object"
-  | Some oid ->
-      let parent = !parent in
-      commit ?parent oid (Buffer.contents b)
+  let ib = Scanf.Scanning.from_string s in
+  Scanf.bscanf ib "%[a-z]@\000%r %[\000-\255]" read_key_values
+    (fun obj_type kvs msg ->
+      assert (obj_type = "commit");
+      let commit_tree_id =
+        match List.assoc_opt "tree" kvs with
+        | Some oid -> Oid.of_hex oid
+        | None -> failwith "Could not find object id in commit object"
+      in
+      let parent =
+        match List.assoc_opt "parent" kvs with
+        | Some oid -> Some (Oid.of_hex oid)
+        | None -> None
+      in
+      commit ?parent commit_tree_id msg)
 
 let of_string s =
   match String.index_opt s object_type_delimiter with
@@ -56,7 +84,7 @@ let of_string s =
       match String.sub s 0 pos with
       | "blob" -> blob contents
       | "tree" -> tree contents
-      | "commit" -> read_commit contents
+      | "commit" -> read_commit s
       | s ->
           let msg = Printf.sprintf "Unkown object type %s" s in
           failwith msg )
