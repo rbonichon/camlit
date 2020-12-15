@@ -56,3 +56,10 @@ let show _oid =
     oid_set;
   pp_close_box ppf ();
   pp_print_flush ppf ()
+
+let status () =
+  match Base.get_branch_name () with
+  | Some branch_name -> Format.printf "On branch %s@." branch_name
+  | None ->
+      let head = Base.get_oid "@" in
+      Format.printf "Head detached at %a@." Oid.pp head

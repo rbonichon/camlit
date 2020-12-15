@@ -85,11 +85,15 @@ let find_ref (Refname refname) =
   in
   find prefixes
 
+(* [head] specific functions *)
+
 let head = Refname.create "HEAD"
 
 let set_head = update_ref head
 
-let get_head () = get_ref (R head)
+let head = Ref.R head
+
+let get_head () = get_ref head
 
 let get_refs () =
   let walk = File.walk File.refs_directory in

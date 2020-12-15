@@ -18,3 +18,6 @@ val is_branch : string -> bool
 
 val init : unit -> unit
 (** [init ()] setup the default structure of a git repository *)
+
+val get_branch_name : unit -> string option
+(** [get_branch_name ()] *)

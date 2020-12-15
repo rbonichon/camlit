@@ -8,10 +8,7 @@ val get_head : unit -> Oid.t option
 
 val get_ref : Ref.t -> Oid.t option
 (** [get_ref ~under refname] retrieves the hash value contained in reffile
-   [refname] under directory [under], if specified.
-   
-   [under] defaults to [File.default_directory]
- *)
+   [refname] under directory  *)
 
 val find_ref : Refname.t -> Oid.t option
 (** [find_ref refname] is like [get_ref] but searches for the reffile under 
@@ -52,3 +49,5 @@ val predecessors : Oid.t list -> Oid.t list
 
 val get_direct_ref : Ref.t -> Ref.t option
 (** [get_direct_ref] *)
+
+val head : Ref.t

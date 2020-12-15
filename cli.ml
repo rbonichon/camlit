@@ -115,6 +115,12 @@ let () =
           | [ oid; tagname ] -> Base.tag_oid tagname (Base.get_oid oid)
           | _ -> assert false);
       };
+      {
+        name = "status";
+        description = "status of current branch";
+        args = [];
+        action = (function _ -> Cmds.status ());
+      };
     ]
   in
   List.iter Subcommand.add subcommands;

@@ -64,16 +64,19 @@ let read_commit s =
   Scanf.bscanf ib "%[a-z]@\000%r %[\000-\255]" read_key_values
     (fun obj_type kvs msg ->
       assert (obj_type = "commit");
-      let commit_tree_id =
-        match List.assoc_opt "tree" kvs with
-        | Some oid -> Oid.of_hex oid
-        | None -> failwith "Could not find object id in commit object"
-      in
-      let parent =
-        match List.assoc_opt "parent" kvs with
+      let find_key_oid ?(on_none = fun () -> None) key =
+        match List.assoc_opt key kvs with
         | Some oid -> Some (Oid.of_hex oid)
-        | None -> None
+        | None -> on_none ()
       in
+      let commit_tree_id =
+        Option.get
+        @@ find_key_oid
+             ~on_none:(fun () ->
+               failwith "Could not find object id in commit object")
+             "tree"
+      in
+      let parent = find_key_oid "parent" in
       commit ?parent commit_tree_id msg)
 
 let of_string s =
