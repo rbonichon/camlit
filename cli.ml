@@ -129,7 +129,18 @@ let () =
   Subcommand.create ~name:"branch" ~description:"Create a new branch" (function
     | [ name ] -> Base.create_branch name (Option.get @@ Data.get_head ())
     | [ name; oid ] -> Base.create_branch name (Base.get_oid oid)
-    | _ -> failwith "usage: branch name [oid]")
+    | _ :: _ -> failwith "branch needs either 0, 1 or 2 arguments"
+    | [] ->
+        let current = Base.get_branch_name () in
+        let branches = Base.branch_names () in
+        let with_prefix ppf branch_name =
+          match current with
+          | None -> Format.fprintf ppf "  %s" branch_name
+          | Some name ->
+              if name = branch_name then Format.fprintf ppf "* %s" branch_name
+              else Format.fprintf ppf "  %s" branch_name
+        in
+        List.iter (Format.printf "%a@." with_prefix) branches)
 
 let parse () =
   let args = ref [] in

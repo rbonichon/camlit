@@ -21,3 +21,6 @@ val init : unit -> unit
 
 val get_branch_name : unit -> string option
 (** [get_branch_name ()] *)
+
+val branch_names : unit -> string list
+(** [branch_names] *)

@@ -40,8 +40,10 @@ val get_tree : Oid.t -> string
 val get_blob : Oid.t -> string
 (** [get_blob] *)
 
-val get_refs : unit -> (Refname.t * Oid.t) list
-(** [get_refs] *)
+val get_refs : ?prefix:string -> unit -> (Refname.t * Oid.t) list
+(** [get_refs] 
+    Strips prefix in [Refname.t] 
+*)
 
 val predecessors : Oid.t list -> Oid.t list
 (** [predecessors oids] computes the transitive closure of predecessors for

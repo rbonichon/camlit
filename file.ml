@@ -57,3 +57,12 @@ let walk path =
         loop files (dirname :: directories) dirs
   in
   loop [] [] [ path ]
+
+let startswith prefix s =
+  let pfx_len = String.length prefix and len = String.length s in
+  pfx_len <= len
+  &&
+  let rec loop idx =
+    idx = pfx_len || (prefix.[idx] = s.[idx] && loop (idx + 1))
+  in
+  loop 0

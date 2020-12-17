@@ -144,24 +144,21 @@ let checkout name =
   in
   Data.set_head _ref
 
-let startswith prefix s =
-  let pfx_len = String.length prefix and len = String.length s in
-  pfx_len <= len
-  &&
-  let rec loop idx =
-    idx = pfx_len || (prefix.[idx] = s.[idx] && loop (idx + 1))
-  in
-  loop 0
-
-let branch_basename (Refname.Refname refname) =
+let branch_basename =
   let start = "refs/heads/" in
-  if not @@ startswith start refname then None
-  else
-    let len = String.length start in
-    Some (String.sub refname len (String.length refname - len))
+  fun (Refname.Refname refname) ->
+    if not @@ File.startswith start refname then None
+    else
+      let len = String.length start in
+      Some (String.sub refname len (String.length refname - len))
 
 let get_branch_name () =
   match Data.get_direct_ref Data.head with
   | None -> None
   | Some (Ref.O _) -> None (* this is an oid not a name *)
   | Some (Ref.R _ref) -> branch_basename _ref
+
+let branch_names () =
+  List.map
+    (fun (Refname.Refname branch_name, _) -> branch_name)
+    (Data.get_refs ~prefix:"refs/heads/" ())

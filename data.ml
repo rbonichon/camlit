@@ -95,13 +95,19 @@ let head = Ref.R head
 
 let get_head () = get_ref head
 
-let get_refs () =
+let get_refs ?prefix () =
   let walk = File.walk File.refs_directory in
-  List.map
-    (fun filename ->
-      let _ref = Refname.create filename in
-      (_ref, Option.get @@ get_ref (R _ref)))
-    walk.files
+  let refs =
+    List.map
+      (fun filename ->
+        let _ref = Refname.create filename in
+        (_ref, Option.get @@ get_ref (R _ref)))
+      walk.files
+  in
+  match prefix with
+  | None -> refs
+  | Some prefix ->
+      List.filter (fun (Refname r, _) -> File.startswith prefix r) refs
 
 let predecessors oids =
   let rec loop visited set = function
