@@ -9,7 +9,7 @@ let hash_file file =
 let cat_file oid =
   Data.get_object oid |> Objects.contents |> Format.printf "%s@."
 
-(* Add n whitespaces after each new lines to string s*)
+(* Add n whitespaces after each new lines to string s *)
 let wrap n ppf s =
   let len = String.length s in
   let blanks = String.make n ' ' in
@@ -18,16 +18,34 @@ let wrap n ppf s =
       if indent then Format.fprintf ppf "%s" blanks;
       let c = s.[idx] in
       Format.pp_print_char ppf c;
-      loop (c = '\n') (idx + 1) )
+      loop (c = '\n') (idx + 1))
   in
   loop true 0
 
+let pp_refs ppf = function
+  | [] -> ()
+  | refs ->
+      Format.fprintf ppf "({%a})"
+        (Format.pp_print_list
+           ~pp_sep:(fun ppf () -> Format.fprintf ppf ", ")
+           Refname.pp)
+        refs
+
+let get_oid_to_refs_tbl () =
+  let refs = Data.get_refs () in
+  let h = Hashtbl.create (List.length refs) in
+  List.iter (fun (refname, oid) -> Hashtbl.add h oid refname) refs;
+  h
+
 let log oid =
   let oids = Data.predecessors [ oid ] in
+  let refs_tbl = get_oid_to_refs_tbl () in
   Format.printf "@[<v 0>%a@]"
     (Format.pp_print_list ~pp_sep:Format.pp_print_cut (fun ppf oid ->
          let cmt = Data.get_commit oid in
-         Format.fprintf ppf "commit %a@,%a@," Oid.pp oid (wrap 4) cmt.message))
+         let refs = Hashtbl.find_all refs_tbl oid in
+         Format.fprintf ppf "commit %a%a@,%a@," Oid.pp oid pp_refs refs (wrap 4)
+           cmt.message))
     oids
 
 let checkout = Base.checkout
@@ -50,7 +68,8 @@ let show _oid =
     (fun oid ->
       let commit = Data.get_commit oid in
       Format.printf "@[<v 2>%a%a@]@," Oid.pp oid
-        (fun ppf -> function None -> ()
+        (fun ppf -> function
+          | None -> ()
           | Some oid -> Format.fprintf ppf "@,Parent: %a" Oid.pp oid)
         commit.parent)
     oid_set;
