@@ -81,17 +81,15 @@ let find_ref (Refname refname) =
         let filename = Filename.concat dir refname in
         match get_hash_from_file filename with
         | None -> find dirs
-        | some_hash -> some_hash )
+        | some_hash -> some_hash)
   in
   find prefixes
 
 (* [head] specific functions *)
 
-let head = Refname.create "HEAD"
+let set_head = update_ref Refname.head
 
-let set_head = update_ref head
-
-let head = Ref.R head
+let head = Ref.R Refname.head
 
 let get_head () = get_ref head
 

@@ -82,3 +82,5 @@ let status () =
   | None ->
       let head = Base.get_oid "@" in
       Format.printf "Head detached at %a@." Oid.pp head
+
+let reset oid = Data.set_head (Ref.O oid)

@@ -121,6 +121,12 @@ let () =
         args = [];
         action = (function _ -> Cmds.status ());
       };
+      {
+        name = "reset";
+        description = "move the head to the specifiec object id";
+        args = [];
+        action = with_oid Cmds.reset;
+      };
     ]
   in
   List.iter Subcommand.add subcommands;
@@ -163,7 +169,7 @@ let parse () =
           | Some scmd as scmd_opt ->
               let open Subcommand in
               args := scmd.args;
-              subcommand := scmd_opt )
+              subcommand := scmd_opt)
       | Some _ -> files := string :: !files)
     umsg;
   match !subcommand with
